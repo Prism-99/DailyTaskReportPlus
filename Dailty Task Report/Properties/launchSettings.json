@@ -1,0 +1,15 @@
+{
+  "profiles": {
+    "Dailty Task Report": {
+      "commandName": "Project",
+      "commandLineArgs": "--mods-path \"Mods-Min\"",
+      "workingDirectory": "t:\\"
+    },
+    "Profile 1": {
+      "commandName": "Executable",
+      "executablePath": "T:\\StardewModdingAPI.exe",
+      "commandLineArgs": "--mods-path \"Mods-Min\"",
+      "workingDirectory": "t:\\"
+    }
+  }
+}
