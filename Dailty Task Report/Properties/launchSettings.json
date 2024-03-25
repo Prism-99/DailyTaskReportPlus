@@ -1,6 +1,6 @@
 {
   "profiles": {
-    "Dailty Task Report": {
+    "Daily Task Report": {
       "commandName": "Project",
       "commandLineArgs": "--mods-path \"Mods-Min\"",
       "workingDirectory": "t:\\"
