@@ -80,9 +80,8 @@ namespace DailyTasksReport.TaskEngines
 
         public bool IsPetBowlFilled()
         {
-            if (_farm == null) return false;
-
-            return false;
+            if (_pet == null) return false;
+            return _pet.GetPetBowl().watered.Value;
         }
         private void UpdateInfo()
         {

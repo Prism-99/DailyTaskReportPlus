@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.9.34616.47
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dailty Task Report Plus", "Dailty Task Report\Dailty Task Report Plus.csproj", "{FAE7C45B-449B-483E-9DA3-CF84D52FEFDF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Daily Tasks Report Plus", "Dailty Task Report\Daily Tasks Report Plus.csproj", "{FAE7C45B-449B-483E-9DA3-CF84D52FEFDF}"
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Daily Task Report - Engine", "Daily Task Report - Engine\Daily Task Report - Engine.shproj", "{8B4874E5-7AEA-476D-AF47-D30A877BC2E9}"
 EndProject
