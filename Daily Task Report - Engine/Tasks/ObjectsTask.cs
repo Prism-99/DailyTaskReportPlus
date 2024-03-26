@@ -1,11 +1,8 @@
 ﻿using DailyTasksReport.UI;
-using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using StardewValley;
 using StardewValley.Objects;
-using System.Linq;
 using DailyTasksReport.TaskEngines;
-using System;
+
 
 namespace DailyTasksReport.Tasks
 {

@@ -1,10 +1,8 @@
 ﻿using System.Text;
-using Microsoft.Xna.Framework;
 using StardewValley.TerrainFeatures;
-using StardewValley;
 using DailyTasksReport.Tasks;
 using DailyTasksReport.UI;
-using StardewValley.TokenizableStrings;
+using StardewValley.GameData.Locations;
 
 namespace DailyTasksReport.TaskEngines
 {
@@ -153,19 +151,19 @@ namespace DailyTasksReport.TaskEngines
                 case CropsTaskId.UnwateredCropFarm:
                 case CropsTaskId.UnwateredCropGreenhouse:
                 case CropsTaskId.UnwateredCropWestIsland:
-                    rpItem.AddRange(EchoForCrops(pair => pair.Item2.state.Value == HoeDirt.dry && pair.Item2.needsWatering() && !pair.Item2.crop.dead.Value));
+                    rpItem.AddRange(EchoForCrops(pair => pair.Item2.state.Value == HoeDirt.dry && pair.Item2.needsWatering() && !pair.Item2.crop.dead.Value).OrderBy(p => p.SortKey));
                     break;
 
                 case CropsTaskId.UnharvestedCropFarm:
                 case CropsTaskId.UnharvestedCropGreenhouse:
                 case CropsTaskId.UnharvestedCropWestIsland:
-                    rpItem.AddRange(EchoForCrops(pair => pair.Item2.readyForHarvest()));
+                    rpItem.AddRange(EchoForCrops(pair => pair.Item2.readyForHarvest()).OrderBy(p => p.SortKey));
                     break;
 
                 case CropsTaskId.DeadCropFarm:
                 case CropsTaskId.DeadCropGreenhouse:
                 case CropsTaskId.DeadCropWestIsland:
-                    rpItem.AddRange(EchoForCrops(pair => pair.Item2.crop.dead.Value));
+                    rpItem.AddRange(EchoForCrops(pair => pair.Item2.crop.dead.Value).OrderBy(p => p.SortKey));
                     break;
 
                 case CropsTaskId.FruitTreesFarm:
@@ -175,29 +173,29 @@ namespace DailyTasksReport.TaskEngines
 
                     if (_index == 0)
                     {
-                        foreach(string location in newFruitTrees.Keys)
+                        foreach (string location in newFruitTrees.Keys)
                         {
-                            foreach (var tuple in newFruitTrees[location].Where(t => t.Item2.fruit.Count >= _config.FruitTrees))
+                            foreach (Tuple<Vector2, FruitTree>? tuple in newFruitTrees[location].Where(t => t.Item2.fruit.Count >= _config.FruitTrees))
                             {
                                 string sFruits = (tuple.Item2.fruit.Count > 1) ? I18n.Tasks_Crop_WithFruit() : I18n.Tasks_Crop_WithFruits();
                                 rpItem.Add(new ReportReturnItem
                                 {
-
-                                    Label = ObjectsNames[tuple.Item2.fruit[0].ParentSheetIndex.ToString()] + I18n.Tasks_Crop_TreeAt() + GetLocationDisplayName(location) + I18n.Tasks_Crop_With() + tuple.Item2.fruit.Count.ToString() + sFruits + " (" + tuple.Item1.X.ToString() + ", " + tuple.Item1.Y.ToString() + ")",
-                                    WarpTo = new Tuple<string, int, int>(location, (int)tuple.Item1.X, (int)tuple.Item1.Y)
+                                    SortKey = ObjectsNames[tuple.Item2.fruit[0].ItemId],
+                                    Label = $"{ObjectsNames[tuple.Item2.fruit[0].ItemId]}{I18n.Tasks_Crop_TreeAt()}{GetLocationDisplayName(location)}{I18n.Tasks_Crop_With()}{tuple.Item2.fruit.Count}{sFruits} ({tuple.Item1.X},{tuple.Item1.Y})",
+                                    WarpTo = Tuple.Create(location, (int)tuple.Item1.X, (int)tuple.Item1.Y)
                                 });
                             }
                         }
                     }
                     else
                     {
-                        foreach (var tuple in FruitTrees[_index].Where(t => t.Item2.fruit.Count >= _config.FruitTrees))
+                        foreach (Tuple<Vector2, FruitTree>? tuple in FruitTrees[_index].Where(t => t.Item2.fruit.Count >= _config.FruitTrees))
                         {
                             string sFruits = (tuple.Item2.fruit.Count > 1) ? I18n.Tasks_Crop_WithFruit() : I18n.Tasks_Crop_WithFruits();
                             rpItem.Add(new ReportReturnItem
                             {
-
-                                Label = ObjectsNames[tuple.Item2.fruit[0].ParentSheetIndex.ToString()] + I18n.Tasks_Crop_TreeAt() + _locationName + I18n.Tasks_Crop_With() + tuple.Item2.fruit.Count.ToString() + sFruits + " (" + tuple.Item1.X.ToString() + ", " + tuple.Item1.Y.ToString() + ")",
+                                SortKey = ObjectsNames[tuple.Item2.fruit[0].ItemId],
+                                Label = $"{ObjectsNames[tuple.Item2.fruit[0].ItemId]}{I18n.Tasks_Crop_TreeAt()}{_locationName}{I18n.Tasks_Crop_With()}{tuple.Item2.fruit.Count}{sFruits} ({tuple.Item1.X},{tuple.Item1.Y})",
                                 WarpTo = new Tuple<string, int, int>(_locationName, (int)tuple.Item1.X, (int)tuple.Item1.Y)
                             });
                         }
@@ -223,8 +221,8 @@ namespace DailyTasksReport.TaskEngines
             {
                 if (newCrops.Count == 0)
                 {
-                    var locations = Game1.locations.Where(p => p.Name != "Greenhouse" && p.Name != "IslandWest" && p.terrainFeatures.Where(p => p.Values.Where(o => o is HoeDirt && ((HoeDirt)o).crop != null && !((HoeDirt)o).crop.forageCrop).Any()).Any());
-                    foreach (var cropLocation in locations)
+                    List<GameLocation> locations = Game1.locations.Where(p => p.Name != "Greenhouse" && p.Name != "IslandWest" && p.terrainFeatures.Where(p => p.Values.Where(o => o is HoeDirt && ((HoeDirt)o).crop != null && !((HoeDirt)o).crop.forageCrop.Value).Any()).Any()).ToList();
+                    foreach (GameLocation cropLocation in locations)
                     {
                         newCrops.Add(cropLocation.Name, new List<Tuple<Vector2, HoeDirt>> { });
                         newCrops[cropLocation.Name].AddRange(cropLocation.terrainFeatures.Pairs.Where(p => p.Value is HoeDirt && ((HoeDirt)p.Value).crop != null).Select(o => Tuple.Create(o.Key, o.Value as HoeDirt)));
@@ -237,10 +235,10 @@ namespace DailyTasksReport.TaskEngines
             {
                 if (Crops[_index].Count == 0)
                 {
-                    var location = Game1.locations.FirstOrDefault(l => l.Name == _locationName);
-                    foreach (var keyValuePair in location.terrainFeatures.Pairs)
+                    GameLocation? location = Game1.locations.FirstOrDefault(l => l.Name == _locationName);
+                    foreach (KeyValuePair<Vector2, TerrainFeature> keyValuePair in location.terrainFeatures.Pairs)
                         if (keyValuePair.Value is HoeDirt dirt && dirt.crop != null)
-                            Crops[_index].Add(new Tuple<Vector2, HoeDirt>(keyValuePair.Key, dirt));
+                            Crops[_index].Add(Tuple.Create(keyValuePair.Key, dirt));
                 }
             }
             switch (_id)
@@ -257,7 +255,7 @@ namespace DailyTasksReport.TaskEngines
                             if (count > 0)
                             {
                                 _anyCrop = true;
-                                prItem.Add(new ReportReturnItem { Label = GetLocationDisplayName(location) + " " + I18n.Tasks_Crop_NotWatered(), Details = count.ToString() });
+                                prItem.Add(new ReportReturnItem { Label = $"{GetLocationDisplayName(location)} {I18n.Tasks_Crop_NotWatered()}", Details = count.ToString() });
                             }
                         }
                     }
@@ -268,7 +266,7 @@ namespace DailyTasksReport.TaskEngines
                         if (count > 0)
                         {
                             _anyCrop = true;
-                            prItem.Add(new ReportReturnItem { Label = _locationName + " " + I18n.Tasks_Crop_NotWatered(), Details = count.ToString() });
+                            prItem.Add(new ReportReturnItem { Label = $"{_locationName} {I18n.Tasks_Crop_NotWatered()}", Details = count.ToString() });
                         }
                     }
                     break;
@@ -307,7 +305,7 @@ namespace DailyTasksReport.TaskEngines
                             if (count > 0)
                             {
                                 _anyCrop = true;
-                                prItem.Add(new ReportReturnItem { Label = GetLocationDisplayName(location) + " " + I18n.Tasks_Crop_ReadyToHarvest(), Details = count.ToString() });
+                                prItem.Add(new ReportReturnItem { Label = $"{GetLocationDisplayName(location)} {I18n.Tasks_Crop_ReadyToHarvest()}", Details = count.ToString() });
                             }
                         }
                     }
@@ -319,14 +317,12 @@ namespace DailyTasksReport.TaskEngines
                             {
                                 if (_config.SkipFlowersInHarvest && (_config.FlowerReportLastDay && Game1.dayOfMonth != 28))
                                 {
-                                    if (ObjectsNames.ContainsKey(item.Item2.crop.indexOfHarvest.Value.ToString()))
+                                    if (ObjectsNames.ContainsKey(item.Item2.crop.indexOfHarvest.Value))
                                     {
 
-                                        string sCat = Game1.objectData[item.Item2.crop.indexOfHarvest.Value].Category.ToString();
+                                        int categoryId = Game1.objectData[item.Item2.crop.indexOfHarvest.Value].Category;
 
-                                        string[] arSubCat = sCat.Split(' ');
-
-                                        if (arSubCat.Length == 1 || arSubCat[1] != "-80")
+                                        if (categoryId != -80)
                                         {
                                             count++;
                                         }
@@ -342,7 +338,7 @@ namespace DailyTasksReport.TaskEngines
                         if (count > 0)
                         {
                             _anyCrop = true;
-                            prItem.Add(new ReportReturnItem { Label = _locationName + " " + I18n.Tasks_Crop_ReadyToHarvest(), Details = count.ToString() });
+                            prItem.Add(new ReportReturnItem { Label = $"{GetLocationDisplayName(_locationName)} {I18n.Tasks_Crop_ReadyToHarvest()}", Details = count.ToString() });
                         }
                     }
                     break;
@@ -358,7 +354,7 @@ namespace DailyTasksReport.TaskEngines
                             if (count > 0)
                             {
                                 _anyCrop = true;
-                                prItem.Add(new ReportReturnItem { Label = I18n.Tasks_Crop_Dead() + " " + GetLocationDisplayName(location), Details = count.ToString() });
+                                prItem.Add(new ReportReturnItem { Label = $"{I18n.Tasks_Crop_Dead()} {GetLocationDisplayName(location)}", Details = count.ToString() });
                             }
                         }
                     }
@@ -368,7 +364,7 @@ namespace DailyTasksReport.TaskEngines
                         if (count > 0)
                         {
                             _anyCrop = true;
-                            prItem.Add(new ReportReturnItem { Label = I18n.Tasks_Crop_Dead() + " " + _locationName, Details = count.ToString() });
+                            prItem.Add(new ReportReturnItem { Label = $"{I18n.Tasks_Crop_Dead()} {GetLocationDisplayName(_locationName)}", Details = count.ToString() });
                         }
                     }
                     break;
@@ -379,14 +375,14 @@ namespace DailyTasksReport.TaskEngines
 
                     if (_index == 0)
                     {
-                        foreach(string key in newFruitTrees.Keys)
+                        foreach (string key in newFruitTrees.Keys)
                         {
                             count = newFruitTrees[key].Count(p => p.Item2.fruit.Count >= _config.FruitTrees);
 
                             if (count > 0)
                             {
                                 _anyCrop = true;
-                                prItem.Add(new ReportReturnItem { Label = I18n.Tasks_Crop_Fruit() + " " + GetLocationDisplayName(key), Details = count.ToString() });
+                                prItem.Add(new ReportReturnItem { Label = $"{I18n.Tasks_Crop_Fruit()} {GetLocationDisplayName(key)}", Details = count.ToString() });
                             }
                         }
                     }
@@ -397,7 +393,7 @@ namespace DailyTasksReport.TaskEngines
                         if (count > 0)
                         {
                             _anyCrop = true;
-                            prItem.Add(new ReportReturnItem { Label = I18n.Tasks_Crop_Fruit() + " " + _locationName, Details = count.ToString() });
+                            prItem.Add(new ReportReturnItem { Label = $"{I18n.Tasks_Crop_Fruit()} {GetLocationDisplayName(_locationName)}", Details = count.ToString() });
                         }
                     }
                     break;
@@ -410,25 +406,40 @@ namespace DailyTasksReport.TaskEngines
         }
         private void LoadFruitTreeData()
         {
-            var plantable = DataLoader.Locations(Game1.content).Where(p => (p.Value?.CanPlantHere ?? false) && p.Key != "IslandWest" && p.Key != "Greenhouse");
+            List<KeyValuePair<string, LocationData>> plantable = null;
 
-
-            foreach (var p in plantable)
+            int iRetry = 5;
+            //
+            //  added retry, sometimes data loading is slow
+            //  and the game will error out with ' Collection was modified; enumeration operation may not execute'
+            //
+            while (iRetry > 0)
             {
-                GameLocation plantableLocation = Game1.getLocationFromName(p.Key);
-
-                if (plantableLocation != null)
+                try
                 {
-                    if (!newFruitTrees.ContainsKey(p.Key))
-                        newFruitTrees.Add(p.Key, new List<Tuple<Vector2, FruitTree>> { });
+                    plantable = DataLoader.Locations(Game1.content).Where(p => (p.Value?.CanPlantHere ?? false) && p.Key != "IslandWest" && p.Key != "Greenhouse").ToList();
+                    break;
+                }
+                catch { iRetry--; }
+            }
+            if (plantable != null)
+            {
+                foreach (KeyValuePair<string, LocationData> p in plantable)
+                {
+                    GameLocation plantableLocation = Game1.getLocationFromName(p.Key);
 
-                    foreach (var pair in plantableLocation.terrainFeatures.Pairs)
+                    if (plantableLocation != null)
+                    {
+                        if (!newFruitTrees.ContainsKey(p.Key))
+                            newFruitTrees.Add(p.Key, new List<Tuple<Vector2, FruitTree>> { });
 
-                        if (pair.Value is FruitTree tree && tree.fruit.Count > 0)
-                            newFruitTrees[p.Key].Add(new Tuple<Vector2, FruitTree>(pair.Key, tree));
+                        foreach (var pair in plantableLocation.terrainFeatures.Pairs)
+
+                            if (pair.Value is FruitTree tree && tree.fruit.Count > 0)
+                                newFruitTrees[p.Key].Add(Tuple.Create(pair.Key, tree));
+                    }
                 }
             }
-
         }
         internal override void FirstScan()
         {
@@ -441,23 +452,23 @@ namespace DailyTasksReport.TaskEngines
             if (_who != _id) return;
 
             LoadFruitTreeData();
- 
+
             var location = Game1.locations.FirstOrDefault(l => l.IsGreenhouse);
             if (location != null)
             {
-                foreach (var pair in location.terrainFeatures.Pairs)
+                foreach (KeyValuePair<Vector2, TerrainFeature> pair in location.terrainFeatures.Pairs)
 
                     if (pair.Value is FruitTree tree && tree.fruit.Count > 0)
-                        FruitTrees[1].Add(new Tuple<Vector2, FruitTree>(pair.Key, tree));
+                        FruitTrees[1].Add(Tuple.Create(pair.Key, tree));
             }
 
             location = Game1.locations.FirstOrDefault(l => l.Name == "IslandWest");
             if (location != null)
             {
-                foreach (var pair in location.terrainFeatures.Pairs)
+                foreach (KeyValuePair<Vector2, TerrainFeature> pair in location.terrainFeatures.Pairs)
 
                     if (pair.Value is FruitTree tree && tree.fruit.Count > 0)
-                        FruitTrees[2].Add(new Tuple<Vector2, FruitTree>(pair.Key, tree));
+                        FruitTrees[2].Add(Tuple.Create(pair.Key, tree));
             }
         }
 
@@ -474,11 +485,10 @@ namespace DailyTasksReport.TaskEngines
             {
                 foreach (string location in newCrops.Keys)
                 {
-                    foreach (var item in newCrops[location].Where(predicate))
+                    foreach (Tuple<Vector2, HoeDirt>? item in newCrops[location].Where(predicate))
                     {
-                        if (ObjectsNames.ContainsKey(item.Item2.crop.indexOfHarvest.Value.ToString()))
+                        if (ObjectsNames.ContainsKey(item.Item2.crop.indexOfHarvest.Value))
                         {
-
                             int categoryId = Game1.objectData[item.Item2.crop.indexOfHarvest.Value].Category;
 
                             if (!_config.SkipFlowersInHarvest || (_config.SkipFlowersInHarvest && categoryId != -80)
@@ -486,8 +496,9 @@ namespace DailyTasksReport.TaskEngines
                             {
                                 prItem.Add(new ReportReturnItem
                                 {
-                                    Label = ObjectsNames[item.Item2.crop.indexOfHarvest.Value.ToString()] + I18n.Tasks_At() + location + " (" + item.Item1.X.ToString() + "," + item.Item1.Y.ToString() + ")",
-                                    WarpTo = new Tuple<string, int, int>(location, (int)item.Item1.X, (int)item.Item1.Y)
+                                    SortKey = ObjectsNames[item.Item2.crop.indexOfHarvest.Value],
+                                    Label = $"{ObjectsNames[item.Item2.crop.indexOfHarvest.Value]}{I18n.Tasks_At()}{GetLocationDisplayName(location)} ({item.Item1.X},{item.Item1.Y})",
+                                    WarpTo = Tuple.Create(location, (int)item.Item1.X, (int)item.Item1.Y)
                                 });
                             }
                         }
@@ -495,8 +506,9 @@ namespace DailyTasksReport.TaskEngines
                         {
                             prItem.Add(new ReportReturnItem
                             {
-                                Label = "Unknown Id:  " + item.Item2.crop.indexOfHarvest.Value + I18n.Tasks_At() + location + " (" + item.Item1.X.ToString() + "," + item.Item1.Y.ToString() + ")",
-                                WarpTo = new Tuple<string, int, int>(location, (int)item.Item1.X, (int)item.Item1.Y)
+                                SortKey = item.Item2.crop.indexOfHarvest.Value,
+                                Label = $"Unknown Id:  {item.Item2.crop.indexOfHarvest.Value}{I18n.Tasks_At()}{GetLocationDisplayName(location)} ({item.Item1.X}, {item.Item1.Y})",
+                                WarpTo = Tuple.Create(location, (int)item.Item1.X, (int)item.Item1.Y)
                             }); ;
                         }
                     }
@@ -505,22 +517,20 @@ namespace DailyTasksReport.TaskEngines
             }
             else
             {
-                foreach (var item in Crops[_index].Where(predicate))
+                foreach (Tuple<Vector2, HoeDirt>? item in Crops[_index].Where(predicate))
                 {
-                    if (ObjectsNames.ContainsKey(item.Item2.crop.indexOfHarvest.Value.ToString()))
+                    if (ObjectsNames.ContainsKey(item.Item2.crop.indexOfHarvest.Value))
                     {
+                        int categoryId = Game1.objectData[item.Item2.crop.indexOfHarvest.Value].Category;
 
-                        string sCat = Game1.objectData[item.Item2.crop.indexOfHarvest.Value].Category.ToString();
-
-                        string[] arSubCat = sCat.Split(' ');
-
-                        if (!_config.SkipFlowersInHarvest || (_config.SkipFlowersInHarvest && (arSubCat.Length == 1 || arSubCat[1] != "-80"))
+                        if (!_config.SkipFlowersInHarvest || (_config.SkipFlowersInHarvest && categoryId != -80)
                             || (_config.FlowerReportLastDay && Game1.dayOfMonth == 28))
                         {
                             prItem.Add(new ReportReturnItem
                             {
-                                Label = ObjectsNames[item.Item2.crop.indexOfHarvest.Value.ToString()] + I18n.Tasks_At() + _locationName + " (" + item.Item1.X.ToString() + "," + item.Item1.Y.ToString() + ")",
-                                WarpTo = new Tuple<string, int, int>(_locationName, (int)item.Item1.X, (int)item.Item1.Y)
+                                SortKey = ObjectsNames[item.Item2.crop.indexOfHarvest.Value],
+                                Label = $"{ObjectsNames[item.Item2.crop.indexOfHarvest.Value]}{I18n.Tasks_At()}{GetLocationDisplayName(_locationName)} ({item.Item1.X},{item.Item1.Y})",
+                                WarpTo = Tuple.Create(_locationName, (int)item.Item1.X, (int)item.Item1.Y)
                             });
                         }
                     }
@@ -528,8 +538,8 @@ namespace DailyTasksReport.TaskEngines
                     {
                         prItem.Add(new ReportReturnItem
                         {
-                            Label = "Unknown Id:  " + item.Item2.crop.indexOfHarvest.Value + I18n.Tasks_At() + _locationName + " (" + item.Item1.X.ToString() + "," + item.Item1.Y.ToString() + ")",
-                            WarpTo = new Tuple<string, int, int>(_locationName, (int)item.Item1.X, (int)item.Item1.Y)
+                            Label = $"Unknown Id:  {item.Item2.crop.indexOfHarvest.Value}{I18n.Tasks_At()}{GetLocationDisplayName(_locationName)} ({item.Item1.X},{item.Item1.Y})",
+                            WarpTo = Tuple.Create(_locationName, (int)item.Item1.X, (int)item.Item1.Y)
                         }); ;
                     }
                 }

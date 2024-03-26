@@ -1,8 +1,4 @@
-﻿using System.Collections.Generic;
-using StardewModdingAPI;
-using StardewValley;
-using System;
-using StardewValley.TokenizableStrings;
+﻿using StardewValley.TokenizableStrings;
 
 namespace DailyTasksReport.TaskEngines
 {

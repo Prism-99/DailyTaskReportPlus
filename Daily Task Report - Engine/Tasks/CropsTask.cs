@@ -1,11 +1,8 @@
 ﻿using DailyTasksReport.UI;
-using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using StardewValley;
 using StardewValley.TerrainFeatures;
-using System.Linq;
 using DailyTasksReport.TaskEngines;
-using System;
+
 
 //#pragma warning disable CC0021 // Use nameof
 
@@ -66,7 +63,7 @@ namespace DailyTasksReport.Tasks
         }
         public override void Draw(SpriteBatch b)
         {
-            if ( CropTaskEngine._who != (CropsTaskId)_Engine.TaskId) return;
+            if (CropTaskEngine._who != (CropsTaskId)_Engine.TaskId) return;
 
             var x = Game1.viewport.X / Game1.tileSize;
             var xLimit = (Game1.viewport.X + Game1.viewport.Width) / Game1.tileSize;
@@ -85,7 +82,18 @@ namespace DailyTasksReport.Tasks
                         if (cropDead && _config.DrawBubbleDeadCrops)
                             DrawBubble(b, Game1.mouseCursors, new Rectangle(269, 471, 14, 15), v);
                         else if (dirt.readyForHarvest() && _config.DrawBubbleUnharvestedCrops)
-                            DrawBubble(b, Game1.mouseCursors, new Rectangle(32, 0, 10, 10), v);
+                        {
+                            bool drawBubble = true;
+                            if (_config.SkipFlowersInHarvest)
+                            {
+                                if(Game1.objectData.TryGetValue(dirt.crop.indexOfHarvest.Value, out var crop))
+                                {
+                                    drawBubble = crop.Category != -80;
+                                }
+                            }
+                            if (drawBubble)
+                                DrawBubble(b, Game1.mouseCursors, new Rectangle(32, 0, 10, 10), v);
+                        }
                         else if (dirtState == HoeDirt.dry && _config.DrawBubbleUnwateredCrops)
                             DrawBubble(b, Game1.toolSpriteSheet, new Rectangle(49, 226, 15, 13), v);
                     }

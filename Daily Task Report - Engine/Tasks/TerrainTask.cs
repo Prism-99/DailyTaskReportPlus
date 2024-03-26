@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using DailyTasksReport.UI;
+﻿using DailyTasksReport.UI;
 using DailyTasksReport.TaskEngines;
 
 namespace DailyTasksReport.Tasks

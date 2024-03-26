@@ -1,14 +1,10 @@
 ﻿using System.Text;
-using StardewValley;
-using Microsoft.Xna.Framework;
 using StardewValley.Objects;
 using StardewValley.Locations;
-using SObject = StardewValley.Object;
-using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using DailyTasksReport.Tasks;
 using DailyTasksReport.UI;
-
+using StardewValley.Buildings;
 
 namespace DailyTasksReport.TaskEngines
 {
@@ -136,7 +132,7 @@ namespace DailyTasksReport.TaskEngines
                     break;
 
                 case ObjectsTaskId.UncollectedMachines:
-                    SObject machine;
+                    SDObject machine;
                     count = (from pair in Machines
                              from pos in pair.Value
                              where pair.Key.objects.TryGetValue(pos, out machine) && MachineReady(machine)
@@ -173,7 +169,6 @@ namespace DailyTasksReport.TaskEngines
                 default:
                     throw new ArgumentOutOfRangeException($"Object type not implemented");
             }
-
         }
 
         private bool LocationHasWaterTiles(GameLocation gl)
@@ -212,21 +207,22 @@ namespace DailyTasksReport.TaskEngines
                 if (!Machines.ContainsKey(location))
                     Machines[location] = new List<Vector2>();
 
-
                 if (LocationHasWaterTiles(location) && !CrabPots.ContainsKey(location))
                     CrabPots[location] = new List<Vector2>();
 
-                foreach (var @object in location.Objects.Pairs)
-                    if (_config.Machines.ContainsKey(@object.Value.name) || @object.Value is Cask)
-                        Machines[location].Add(@object.Key);
-                    else if (@object.Value is CrabPot)
-                        CrabPots[location].Add(@object.Key);
+                List<Vector2> locationMachines = location.Objects.Pairs.Where(p => _config.Machines.ContainsKey(p.Value.name) || p.Value is Cask).Select(p => p.Key).ToList();
+                Machines[location].AddRange(locationMachines);
 
+                if (CrabPots.ContainsKey(location))
+                {
+                    List<Vector2> locationCrabPost = location.Objects.Pairs.Where(p => p.Value is CrabPot).Select(p => p.Key).ToList();
+                    CrabPots[location].AddRange(locationMachines);
+                }
 
                 if (!location.IsBuildableLocation()) continue;
                 GameLocation farm = location;
 
-                foreach (var building in farm.buildings)
+                foreach (Building? building in farm.buildings)
                 {
                     var indoors = building.indoors.Value;
                     if (indoors == null) continue;
@@ -234,26 +230,26 @@ namespace DailyTasksReport.TaskEngines
                     if (!Machines.ContainsKey(indoors))
                         Machines[indoors] = new List<Vector2>();
 
-                    foreach (var @object in indoors.Objects.Pairs)
-                        if (!@object.Value.DisplayName.StartsWith("Error item", StringComparison.CurrentCultureIgnoreCase) && _config.Machines.ContainsKey(@object.Value.name))
+                    foreach (KeyValuePair<Vector2, SDObject> @object in indoors.Objects.Pairs)
+                        if (!@object.Value.Name.StartsWith("Error item", StringComparison.CurrentCultureIgnoreCase) && _config.Machines.ContainsKey(@object.Value.name))
                             Machines[indoors].Add(@object.Key);
                 }
             }
         }
 
 
-        private static List<ReportReturnItem> EchoForCrabpots(Predicate<CrabPot> predicate)
+        private List<ReportReturnItem> EchoForCrabpots(Predicate<CrabPot> predicate)
         {
             List<ReportReturnItem> prItem = new List<ReportReturnItem> { };
 
-            foreach (var location in CrabPots)
-                foreach (var position in location.Value)
+            foreach (KeyValuePair<GameLocation, List<Vector2>> location in CrabPots.Where(p => p.Value.Count > 0))
+                foreach (Vector2 position in location.Value)
                 {
                     if (!(location.Key.objects[position] is CrabPot cp) || !predicate.Invoke(cp)) continue;
                     prItem.Add(new ReportReturnItem
                     {
-                        Label = location.Key.Name + " (" + position.X.ToString() + ", " + position.Y.ToString() + ")",
-                        WarpTo = new Tuple<string, int, int>(location.Key.Name, (int)position.X, (int)position.Y)
+                        Label = $"{GetLocationDisplayName(location.Key.Name)} ({position.X},{position.Y})",
+                        WarpTo = Tuple.Create(location.Key.Name, (int)position.X, (int)position.Y)
                     });
                 }
 
@@ -264,15 +260,15 @@ namespace DailyTasksReport.TaskEngines
         {
             List<ReportReturnItem> prItem = new List<ReportReturnItem> { };
 
-            foreach (var location in Machines)
-                foreach (var position in location.Value)
+            foreach (KeyValuePair<GameLocation, List<Vector2>> location in Machines.Where(p => p.Value.Count > 0))
+                foreach (Vector2 position in location.Value)
                 {
                     if (!location.Key.objects.TryGetValue(position, out var machine)) continue;
                     if (!MachineReady(machine)) continue;
 
-                    var heldObject = machine.heldObject.Value;
+                    SDObject heldObject = machine.heldObject.Value;
 
-                    var quality = "";
+                    string quality = "";
                     if (machine is Cask cask)
                     {
                         quality = heldObject.Quality == 1 ? I18n.Tasks_Object_Silver()
@@ -284,8 +280,8 @@ namespace DailyTasksReport.TaskEngines
                     {
                         prItem.Add(new ReportReturnItem
                         {
-                            Label = machine.name + I18n.Tasks_Object_With() + quality + " " + heldObject.Name + I18n.Tasks_At() + location.Key.Name + " (" + position.X.ToString() + ", " + position.Y.ToString() + ")",
-                            WarpTo = new Tuple<string, int, int>(location.Key.Name, (int)position.X, (int)position.Y)
+                            Label = $"{machine.DisplayName}{I18n.Tasks_Object_With()}{quality} {heldObject.DisplayName}{I18n.Tasks_At()}{GetLocationDisplayName(location.Key.Name)} ({position.X},{position.Y})",
+                            WarpTo = Tuple.Create(location.Key.Name, (int)position.X, (int)position.Y)
                         }); ;
                     }
                     catch { }
@@ -294,12 +290,12 @@ namespace DailyTasksReport.TaskEngines
             return prItem;
         }
 
-        private bool MachineReady(SObject o)
+        private bool MachineReady(SDObject o)
         {
             if (o != null)
             {
                 return
-                    (_config.Machines.TryGetValue(o.Name, out var enabled) && enabled && o.readyForHarvest.Value) ||
+                    (_config.Machines.TryGetValue(o.Name, out bool enabled) && enabled && o.readyForHarvest.Value) ||
                     (o is Cask cask && cask.heldObject.Value?.Quality >= _config.Cask);
             }
             return false;
@@ -314,28 +310,30 @@ namespace DailyTasksReport.TaskEngines
                 return;
 
             Vector2 pos;
-            SObject obj;
-            var loc = Game1.currentLocation;
+            SDObject obj;
+
             if (e.Location is MineShaft || Game1.newDay) return;
 
-            foreach (var item in e.Added)
+            foreach (KeyValuePair<Vector2, SDObject> item in e.Added)
             {
                 pos = item.Key;
                 obj = item.Value;
                 if ((_config.Machines.ContainsKey(obj.name) || obj is Cask) &&
                         Machines.TryGetValue(e.Location, out var list))
-                    list.Add(pos);
-                else if (obj is CrabPot && CrabPots.TryGetValue(e.Location, out list))
-                    list.Add(pos);
+                    if (!list.Contains(pos))
+                        list.Add(pos);
+                    else if (obj is CrabPot && CrabPots.TryGetValue(e.Location, out list))
+                        if (!list.Contains(pos))
+                            list.Add(pos);
             }
 
-            foreach (var item in e.Removed)
+            foreach (KeyValuePair<Vector2, SDObject> item in e.Removed)
             {
                 pos = item.Key;
                 obj = item.Value;
-                if (Machines.TryGetValue(loc, out var list))
+                if (Machines.TryGetValue(e.Location, out var list))
                     list.Remove(pos);
-                if (CrabPots.TryGetValue(loc, out list))
+                if (CrabPots.TryGetValue(e.Location, out list))
                     list.Remove(pos);
                 break;
             }

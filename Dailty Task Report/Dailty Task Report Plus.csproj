@@ -11,18 +11,33 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="I18n\" />
+    <Folder Include="i18n\" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Pathoschild.Stardew.ModBuildConfig" Version="4.1.1" />
   </ItemGroup>
-
+<ItemGroup>
+		<Using Include="StardewValley" />
+		<Using Include="StardewModdingAPI" />
+		<Using Include="Microsoft.Xna.Framework" />
+		<Using Alias="NotNullAttribute" Include="System.Diagnostics.CodeAnalysis.NotNullAttribute" />
+		<Using Alias="Object" Include="System.Object" />
+		<Using Alias="SDObject" Include="StardewValley.Object" />
+		<using Alias="Rectangle" Include="Microsoft.Xna.Framework.Rectangle" />
+		<using Alias="XSize" Include="xTile.Dimensions.Size" />
+	</ItemGroup>
   <ItemGroup>
-    <None Update="I18n\default.json">
+    <None Update="i18n\de.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="i18n\default.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="manifest.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="release_notes.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>

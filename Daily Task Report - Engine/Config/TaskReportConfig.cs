@@ -57,7 +57,7 @@ namespace DailyTasksReport
         public int SiloThreshold { get; set; } = 100;
         // <summary> Product quality to check in casks. </summary>
         public int Cask { get; set; } = 3;
-        internal bool ProductToCollect(int objectIndex)
+        internal bool ProductToCollect(string objectIndex)
         {
             return AnimalProducts[LookupProductToCollect[objectIndex]];
         }
@@ -82,25 +82,25 @@ namespace DailyTasksReport
             {"438", "Goat milk"},
             {"440", "Sheep wool"}
         };
-        private static readonly Dictionary<int, string> LookupProductToCollect = new Dictionary<int, string>
+        private static readonly Dictionary<string, string> LookupProductToCollect = new Dictionary<string, string>
         {
-            {174, "Chicken egg"},
-            {176, "Chicken egg"},
-            {180, "Chicken egg"},
-            {182, "Chicken egg"},
-            {107, "Dinosaur egg"},
-            {442, "Duck egg"},
-            {444, "Duck feather"},
-            {440, "Rabbit's wool"},
-            {446, "Rabbit's foot"},
-            {430, "Truffle"},
-            {56, "Slime ball"},
-            {57, "Slime ball"},
-            {58, "Slime ball"},
-            {59, "Slime ball"},
-            {60, "Slime ball"},
-            {61, "Slime ball"},
-            {289, "Ostrich Egg" }
+            {"174", "Chicken egg"},
+            {"176", "Chicken egg"},
+            {"180", "Chicken egg"},
+            {"182", "Chicken egg"},
+            {"107", "Dinosaur egg"},
+            {"442", "Duck egg"},
+            {"444", "Duck feather"},
+            {"440", "Rabbit's wool"},
+            {"446", "Rabbit's foot"},
+            {"430", "Truffle"},
+            {"56", "Slime ball"},
+            {"57", "Slime ball"},
+            {"58", "Slime ball"},
+            {"59", "Slime ball"},
+            {"60", "Slime ball"},
+            {"61", "Slime ball"},
+            {"289", "Ostrich Egg" }
         };
         public Dictionary<string, bool> AnimalProducts { get; set; } = new Dictionary<string, bool>
         {
@@ -123,6 +123,7 @@ namespace DailyTasksReport
             {"Charcoal Kiln", true},
             {"Cheese Press", true},
             {"Crystalarium", true},
+            {"Dehydrator",true },
             {"Furnace", true},
             {"Keg", true},
             {"Lightning Rod", true},

@@ -1,10 +1,7 @@
 ﻿using DailyTasksReport.Tasks;
 using DailyTasksReport.UI;
-using StardewModdingAPI;
 using StardewModdingAPI.Events;
-using StardewValley;
-using System;
-using System.Collections.Generic;
+
 
 namespace DailyTasksReport
 {
@@ -41,6 +38,8 @@ namespace DailyTasksReport
 
             Config = helper.ReadConfig<TaskReportConfig>();
 
+            ApplyUpdateChages();
+
             SetupTasks();
 
             helper.Events.GameLoop.ReturnedToTitle += GameLoop_ReturnedToTitle;
@@ -55,7 +54,14 @@ namespace DailyTasksReport
             // Draw Events
             helper.Events.Display.RenderingHud += Display_RenderingHud;
         }
-
+        /// <summary>
+        /// Fix up any changes that would affect saved configuraitons
+        /// </summary>
+        private void ApplyUpdateChages()
+        {
+            if (!Config.Machines.ContainsKey("Dehydrator"))
+                Config.Machines.Add("Dehydrator", true);
+        }
         private void GameLoop_ReturnedToTitle(object? sender, ReturnedToTitleEventArgs e)
         {
             _tasks.ForEach(t => t.Clear());

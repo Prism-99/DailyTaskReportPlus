@@ -1,11 +1,6 @@
-﻿using System;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using System.Linq;
+﻿using Microsoft.Xna.Framework.Graphics;
 using DailyTasksReport.TaskEngines;
-using StardewValley;
 using StardewValley.Locations;
-using StardewValley.Characters;
 using DailyTasksReport.UI;
 
 namespace DailyTasksReport.Tasks

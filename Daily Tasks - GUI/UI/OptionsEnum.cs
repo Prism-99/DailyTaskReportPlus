@@ -50,6 +50,7 @@
         CharcoalKiln = 303,
         CheesePress = 304,
         Crystalarium = 305,
+        Dehydrator=321,
         Furnace = 306,
         Keg = 307,
         LightningRod = 308,

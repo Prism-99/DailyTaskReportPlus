@@ -1,11 +1,8 @@
-﻿using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
+﻿using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using StardewValley;
 using StardewValley.BellsAndWhistles;
 using StardewValley.Menus;
-using System;
-using System.Collections.Generic;
+
 
 namespace DailyTasksReport.UI
 {
@@ -123,6 +120,7 @@ namespace DailyTasksReport.UI
             _options.Add(new Checkbox("Charcoal Kiln", OptionsEnum.CharcoalKiln, parent.Config, 1));
             _options.Add(new Checkbox("Cheese Press", OptionsEnum.CheesePress, parent.Config, 1));
             _options.Add(new Checkbox("Crystalarium", OptionsEnum.Crystalarium, parent.Config, 1));
+            _options.Add(new Checkbox("Dehydrator", OptionsEnum.Dehydrator, parent.Config, 1));
             _options.Add(new Checkbox("Furnace", OptionsEnum.Furnace, parent.Config, 1));
             _options.Add(new Checkbox("Keg", OptionsEnum.Keg, parent.Config, 1));
             _options.Add(new Checkbox("Lightning Rod", OptionsEnum.LightningRod, parent.Config, 1));

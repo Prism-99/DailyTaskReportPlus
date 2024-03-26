@@ -1,0 +1,13 @@
+﻿1.5.1
+-fixed wrong directory name for i18n messing up translation on Linux
+-fixed issue with null animal products causing the report not to pop
+-added nexus mod key to manifest file so update checks are correct
+-fixed wrong field used for Animal house name
+-added German translation (Thanks Th3Tob1)
+-updated Barn and Coop checks
+-updated fence checking to all locations
+-added new machine(s) to default machine list (not listing them, no spoilers)
+-fixed bug that double reported machines
+
+1.5.0
+-Initial release

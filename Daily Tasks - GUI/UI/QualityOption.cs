@@ -1,10 +1,6 @@
-﻿using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
+﻿using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using StardewValley;
 using StardewValley.Menus;
-using System;
-using System.Collections.Generic;
 
 namespace DailyTasksReport.UI
 {
@@ -144,7 +140,7 @@ namespace DailyTasksReport.UI
             _isMouseOnPlusButton = false;
         }
 
-        public override void draw(SpriteBatch b, int slotX, int slotY, IClickableMenu context = null)
+        public override void draw(SpriteBatch b, int slotX, int slotY, IClickableMenu? context)
         {
             b.Draw(Game1.mouseCursors, new Vector2(slotX + _minusButton.X, slotY + _minusButton.Y), MinusButtonSource,
                 Color.White * (greyedOut ? 0.33f : 1f) * (_selectedQuality == 0 ? 0.5f : 1f), 0.0f, Vector2.Zero,

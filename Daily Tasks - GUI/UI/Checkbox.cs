@@ -1,11 +1,8 @@
-﻿using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
+﻿using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using StardewValley;
 using StardewValley.BellsAndWhistles;
 using StardewValley.Menus;
-using System;
-using System.Linq;
+
 
 namespace DailyTasksReport.UI
 {
@@ -218,6 +215,10 @@ namespace DailyTasksReport.UI
 
                 case OptionsEnum.Crystalarium:
                     _isChecked = _config.Machines["Crystalarium"];
+                    break;
+
+                case OptionsEnum.Dehydrator:
+                    _isChecked = _config.Machines["Dehyrdator"];
                     break;
 
                 case OptionsEnum.Furnace:
@@ -528,6 +529,10 @@ namespace DailyTasksReport.UI
 
                 case OptionsEnum.Crystalarium:
                     _config.Machines["Crystalarium"] = _isChecked;
+                    break;
+
+                case OptionsEnum.Dehydrator:
+                    _config.Machines["Dehydrator"] = _isChecked;
                     break;
 
                 case OptionsEnum.Furnace:

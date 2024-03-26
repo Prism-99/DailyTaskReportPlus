@@ -1,5 +1,4 @@
 ﻿using StardewValley.Characters;
-using StardewValley;
 using StardewValley.Locations;
 using DailyTasksReport.UI;
 
@@ -22,7 +21,7 @@ namespace DailyTasksReport.TaskEngines
 
         public override void Clear()
         {
-            Enabled = _config.UnpettedPet || _config.UnfilledPetBowl;
+            SetEnabled();
             _pet = null;
             _petBowlFilled = false;
             _petPetted = false;

@@ -1,19 +1,12 @@
-﻿using System.Text;
-using DailyTasksReport.UI;
-using StardewValley;
+﻿using DailyTasksReport.UI;
 using StardewValley.Locations;
-
-
-
-
-
 
 namespace DailyTasksReport.TaskEngines
 {
     class FarmCaveTaskEngine : TaskEngine
     {
-        public static readonly int[] Fruits = { 296, 396, 406, 410, 613, 634, 635, 636, 637, 638 };
-        private string _farmCaveItemName="";
+        public static readonly string[] Fruits = { "296", "396", "406", "410", "613", "634", "635", "636", "637", "638" };
+        private string _farmCaveItemName = "";
 
         private readonly Dictionary<string, int> _objectsList = new Dictionary<string, int>();
 
@@ -25,6 +18,7 @@ namespace DailyTasksReport.TaskEngines
         }
         public override void Clear()
         {
+            SetEnabled();
             _farmCaveItemName = Game1.player.caveChoice.Value == 1 ? I18n.Tasks_Cave_ItemName_Fruits() : I18n.Tasks_Cave_ItemName_Mushrooms();
             _objectsList.Clear();
         }
@@ -36,14 +30,10 @@ namespace DailyTasksReport.TaskEngines
 
             if (!Enabled || _objectsList.Count == 0) return prItem;
 
-            var stringBuilder = new StringBuilder();
-
-            foreach (var pair in _objectsList)
+            foreach (KeyValuePair<string, int> pair in _objectsList)
             {
-                var name = Pluralize(pair.Key, pair.Value);
-                prItem.Add(new ReportReturnItem { Label = pair.Value.ToString() + " " + name });
-
-
+                string name = Pluralize(pair.Key, pair.Value);
+                prItem.Add(new ReportReturnItem { Label = $"{pair.Value} {name}" });
             }
 
             return prItem;
@@ -57,7 +47,7 @@ namespace DailyTasksReport.TaskEngines
 
             if (_objectsList.Count == 0) return prItem;
 
-            prItem.Add(new ReportReturnItem { Label = _farmCaveItemName + I18n.Tasks_Cave_InCave(), Details = _objectsList.Sum(o => o.Value).ToString() });
+            prItem.Add(new ReportReturnItem { Label =$"{_farmCaveItemName}{I18n.Tasks_Cave_InCave()}", Details = _objectsList.Sum(o => o.Value).ToString() });
 
             return prItem;
         }
@@ -68,34 +58,36 @@ namespace DailyTasksReport.TaskEngines
         }
         internal override void FirstScan()
         {
-            var farmCave = Game1.locations.OfType<FarmCave>().FirstOrDefault();
+            FarmCave? farmCave = Game1.locations.OfType<FarmCave>().FirstOrDefault();
 
-            foreach (var obj in farmCave.objects.Values)
+            if (farmCave != null)
             {
-                if (obj.ParentSheetIndex == 128 && obj.readyForHarvest.Value)
+                foreach (SDObject? obj in farmCave.objects.Values)
                 {
-                    var heldObject = obj.heldObject.Value;
-
-                    if (heldObject != null)
+                    if (obj.ItemId == "128" && obj.readyForHarvest.Value)
                     {
-                        string nameKey = string.IsNullOrEmpty(heldObject.displayName) ? heldObject.name : heldObject.displayName;
+                        SDObject heldObject = obj.heldObject.Value;
+
+                        if (heldObject != null)
+                        {
+                            string nameKey = string.IsNullOrEmpty(heldObject.displayName) ? heldObject.name : heldObject.displayName;
+                            if (_objectsList.ContainsKey(nameKey))
+                                _objectsList[nameKey] += 1;
+                            else
+                                _objectsList[nameKey] = 1;
+                        }
+                    }
+                    else if (Array.BinarySearch(Fruits, obj.ItemId) >= 0)
+                    {
+                        string nameKey = string.IsNullOrEmpty(obj.displayName) ? obj.name : obj.displayName;
+
                         if (_objectsList.ContainsKey(nameKey))
                             _objectsList[nameKey] += 1;
                         else
                             _objectsList[nameKey] = 1;
                     }
                 }
-                else if (Array.BinarySearch(Fruits, obj.ParentSheetIndex) >= 0)
-                {
-                    string nameKey = string.IsNullOrEmpty(obj.displayName) ? obj.name : obj.displayName;
-
-                    if (_objectsList.ContainsKey(nameKey))
-                        _objectsList[nameKey] += 1;
-                    else
-                        _objectsList[nameKey] = 1;
-                }
             }
         }
-
     }
 }

@@ -1,9 +1,5 @@
-﻿using System.Collections.Generic;
-using StardewModdingAPI;
-using DailyTasksReport.TaskEngines;
-using Microsoft.Xna.Framework;
+﻿using DailyTasksReport.TaskEngines;
 using Microsoft.Xna.Framework.Graphics;
-using StardewValley;
 
 namespace DailyTasksReport.Tasks
 {

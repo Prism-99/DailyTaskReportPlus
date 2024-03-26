@@ -1,7 +1,5 @@
-﻿using StardewValley;
-using StardewValley.Locations;
+﻿using StardewValley.Locations;
 using StardewValley.Menus;
-using Microsoft.Xna.Framework;
 using StardewModdingAPI.Events;
 using DailyTasksReport.UI;
 
@@ -12,9 +10,7 @@ namespace DailyTasksReport.TaskEngines
     class MiscTaskEngine : TaskEngine
     {
 
-        private readonly Dictionary<string, string> _tvRecipes =
-            Game1.content.Load<Dictionary<string, string>>("Data\\TV\\CookingChannel");
-
+        private readonly Dictionary<string, string> _tvRecipes = DataLoader.Tv_CookingChannel(Game1.content);
         private string _recipeOfTheDay = "";
 
         private NPC? _birthdayNpc;
@@ -128,7 +124,7 @@ namespace DailyTasksReport.TaskEngines
                 }
             }
 
-            foreach (var location in Game1.locations)
+            foreach (GameLocation? location in Game1.locations)
                 foreach (var npc in location.characters)
 
                     if (npc.isBirthday())

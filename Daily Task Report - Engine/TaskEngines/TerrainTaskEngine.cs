@@ -1,12 +1,11 @@
-﻿using StardewValley;
-using DailyTasksReport.Tasks;
+﻿using DailyTasksReport.Tasks;
 using DailyTasksReport.UI;
 
 namespace DailyTasksReport.TaskEngines
 {
     class TerrainTaskEngine : TaskEngine
     {
-        private List<Fence> _Fences = new List<Fence> { };
+        private Dictionary<string, List<Fence>> _Fences = new();
         private readonly TerrainTaskId _id;
 
         internal TerrainTaskEngine(TaskReportConfig config, TerrainTaskId id)
@@ -29,21 +28,22 @@ namespace DailyTasksReport.TaskEngines
 
             if (!Enabled) return prItem;
 
-            GameLocation location = Game1.locations.OfType<Farm>().FirstOrDefault();
+            var locations = Game1.locations.Where(p => p.IsBuildableLocation());
 
-            foreach (Fence f in location.Objects.Values.OfType<Fence>())
+            foreach (GameLocation location in locations)
             {
-                if (f.health.Value < 1)
+                foreach (Fence f in location.Objects.Values.OfType<Fence>())
                 {
-                    //prItem.Add(new ReportReturnItem { Label = @"Fence Health (<span onclick=""WarpTo('Farm'," + f.tileLocation.X.ToString() + "," + f.tileLocation.Y.ToString() + @"); return false;"">" + f.tileLocation.X.ToString() + "," + f.tileLocation.Y.ToString() + "</span>): " + f.health.ToString() });
-                    prItem.Add(new ReportReturnItem
+                    if (f.health.Value < 1)
                     {
-                        Label = I18n.Tasks_Terrain_Fence() + " (" + f.TileLocation.X.ToString() + ", " + f.TileLocation.Y.ToString() + ")",
-                        WarpTo = new System.Tuple<string, int, int>("Farm", (int)f.TileLocation.X, (int)f.TileLocation.Y)
-                    });
+                        prItem.Add(new ReportReturnItem
+                        {
+                            Label = $"{I18n.Tasks_Terrain_Fence()}{GetLocationDisplayName(location.DisplayName)}{I18n.Tasks_At()}({f.TileLocation.X},{f.TileLocation.Y})",
+                            WarpTo = Tuple.Create(location.Name, (int)f.TileLocation.X, (int)f.TileLocation.Y)
+                        });
+                    }
                 }
             }
-
             return prItem;
         }
 
@@ -53,23 +53,33 @@ namespace DailyTasksReport.TaskEngines
 
             if (!Enabled) return prItem;
 
-
-            if (_Fences.Count > 0)
+            foreach (var fenceData in _Fences)
             {
-                prItem.Add(new ReportReturnItem { Label = I18n.Tasks_Terrain_Damaged() + _Fences.Count.ToString() });
+                if (fenceData.Value.Count > 0)
+                {
+                    prItem.Add(new ReportReturnItem { Label = $"{GetLocationDisplayName(fenceData.Key)}{I18n.Tasks_Terrain_Damaged()}{_Fences.Count}" });
+                }
             }
             return prItem;
         }
 
         internal override void FirstScan()
         {
-            GameLocation location = Game1.locations.OfType<Farm>().FirstOrDefault();
+            List<GameLocation> locations = Game1.locations.Where(p => p.IsBuildableLocation()).ToList();
 
-            foreach (Fence f in location.Objects.Values.OfType<Fence>())
+            foreach (GameLocation location in locations)
             {
-                if (f.health.Value < 1)
+                foreach (Fence f in location.Objects.Values.OfType<Fence>())
                 {
-                    _Fences.Add(f);
+                    if (!_Fences.ContainsKey(location.Name))
+                        _Fences.Add(location.Name, new List<Fence> { });
+#if DEBUG
+                    //f.health.Value = -0.5f;
+#endif
+                    if (f.health.Value < 1)
+                    {
+                        _Fences[location.Name].Add(f);
+                    }
                 }
             }
         }

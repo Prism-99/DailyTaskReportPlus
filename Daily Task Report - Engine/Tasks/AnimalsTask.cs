@@ -1,10 +1,6 @@
 ﻿using DailyTasksReport.UI;
-using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using StardewValley;
 using StardewValley.Buildings;
-using System;
-using System.Linq;
 
 using DailyTasksReport.TaskEngines;
 
@@ -71,16 +67,16 @@ namespace DailyTasksReport.Tasks
             // Truffles
             if (_config.DrawBubbleTruffles && Game1.currentLocation is Farm)
             {
-                var x = Game1.viewport.X / Game1.tileSize;
-                var xLimit = (Game1.viewport.X + Game1.viewport.Width) / Game1.tileSize;
+                int x = Game1.viewport.X / Game1.tileSize;
+                int xLimit = (Game1.viewport.X + Game1.viewport.Width) / Game1.tileSize;
                 var yStart = Game1.viewport.Y / Game1.tileSize;
-                var yLimit = (Game1.viewport.Y + Game1.viewport.Height) / Game1.tileSize + 1;
+                int yLimit = (Game1.viewport.Y + Game1.viewport.Height) / Game1.tileSize + 1;
                 for (; x <= xLimit; ++x)
-                    for (var y = yStart; y <= yLimit; ++y)
+                    for (int y = yStart; y <= yLimit; ++y)
                     {
-                        if (!Game1.currentLocation.objects.TryGetValue(new Vector2(x, y), out var o)) continue;
+                        if (!Game1.currentLocation.objects.TryGetValue(new Vector2(x, y), out SDObject? o)) continue;
 
-                        var v = new Vector2(o.TileLocation.X * Game1.tileSize - Game1.viewport.X + Game1.tileSize / 8f,
+                        Vector2 v = new Vector2(o.TileLocation.X * Game1.tileSize - Game1.viewport.X + Game1.tileSize / 8f,
                             o.TileLocation.Y * Game1.tileSize - Game1.viewport.Y - Game1.tileSize * 2 / 4f);
                         if (o.name == "Truffle")
                             DrawBubble(Game1.spriteBatch, Game1.objectSpriteSheet, new Rectangle(352, 273, 14, 14), v);
@@ -109,7 +105,7 @@ namespace DailyTasksReport.Tasks
 
                 var v = new Vector2(animal.Value.StandingPixel.X  - Game1.viewport.X ,
                     animal.Value.StandingPixel.Y - Game1.viewport.Y );
-                if (animal.Value.home is Coop)
+                if (animal.Value.home?.GetData()?.ValidOccupantTypes?.Contains("Coop") ?? false)
                 {
                     v.X -= Game1.tileSize * 0.3f;
                     v.Y -= Game1.tileSize * 6 / 4f;
@@ -146,19 +142,19 @@ namespace DailyTasksReport.Tasks
 
             if (!Game1.currentLocation?.IsBuildableLocation()??false) return;
 
-            foreach (var building in Game1.currentLocation.buildings)
+            foreach (Building? building in Game1.currentLocation.buildings)
                 if (building.indoors.Value is AnimalHouse animalHouse)
                 {
-                    var anyHayMissing = _config.DrawBubbleBuildingsMissingHay &&
+                    bool anyHayMissing = _config.DrawBubbleBuildingsMissingHay &&
                                         animalHouse.numberOfObjectsWithName("Hay") < animalHouse.animalLimit.Value;
-                    var anyProduce = _config.DrawBubbleBuildingsWithProduce && building is Coop &&
+                    bool anyProduce = _config.DrawBubbleBuildingsWithProduce && (building.GetData()?.ValidOccupantTypes?.Contains("Coop") ?? false) &&
                                      animalHouse.objects.Values.Any(o =>
-                                         Array.BinarySearch(AnimalTaskEngine.CollectableAnimalProducts, o.ParentSheetIndex) >= 0);
+                                         Array.BinarySearch(AnimalTaskEngine.CollectableAnimalProducts, o.ItemId) >= 0);
 
-                    var v = new Vector2(building.tileX.Value * Game1.tileSize - Game1.viewport.X + Game1.tileSize * 1.1f,
+                    Vector2 v = new Vector2(building.tileX.Value * Game1.tileSize - Game1.viewport.X + Game1.tileSize * 1.1f,
                         building.tileY.Value * Game1.tileSize - Game1.viewport.Y + Game1.tileSize / 2);
 
-                    if (building is Barn)
+                    if (building.GetData()?.ValidOccupantTypes?.Contains("Barn")??false)
                         v.Y += Game1.tileSize / 2f;
 
                     if (anyHayMissing)

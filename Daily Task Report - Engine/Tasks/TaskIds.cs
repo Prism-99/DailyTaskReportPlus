@@ -1,9 +1,5 @@
-﻿
-
-namespace DailyTasksReport.Tasks
+﻿namespace DailyTasksReport.Tasks
 {
-
-
     public enum CropsTaskId
     {
         None = -1,

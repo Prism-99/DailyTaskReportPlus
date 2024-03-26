@@ -12,8 +12,8 @@
   "tasks.animal.emptyhay": "Empty hay spots on feeding benches",
   "tasks.animal.at": " at ",
   "tasks.animal.has": " has ",
-  "tasks.animal.missinghay": "Hay missing at",
-  "tasks.animal.missinghays": " hay missing at ",
+  "tasks.animal.missinghay": "Hay missing in",
+  "tasks.animal.missinghays": " hay missing in ",
   "tasks.animal.ponds.attention": "Ponds needing attention",
   "tasks.animal.ponds.collect": "Ponds with items to collect",
   //
@@ -66,6 +66,6 @@
   //
   //  terrain tasks
   //
-  "tasks.terrain.fence": "Damaged Fence at Farm",
-  "tasks.terrain.damaged": "Damaged Fences: "
+  "tasks.terrain.fence": "Damaged Fence in ",
+  "tasks.terrain.damaged": " damaged fences: "
 }

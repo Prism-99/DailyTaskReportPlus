@@ -1,11 +1,10 @@
 ﻿using System.Text;
-using StardewValley;
 using StardewValley.Buildings;
-using SObject = StardewValley.Object;
 using DailyTasksReport.Tasks;
 using StardewModdingAPI.Events;
 using StardewValley.Menus;
 using DailyTasksReport.UI;
+using StardewValley.TokenizableStrings;
 
 
 
@@ -13,10 +12,10 @@ namespace DailyTasksReport.TaskEngines
 {
     class AnimalTaskEngine : TaskEngine
     {
-        public static readonly int[] CollectableAnimalProducts = { 107, 174, 176, 180, 182, 440, 442, 444, 446 };
+        public static readonly string[] CollectableAnimalProducts = { "107", "174", "176", "180", "182", "440", "442", "444", "446" };
 
-        private static readonly List<TaskItem<SObject>> AnimalProductsToCollect = new List<TaskItem<SObject>>();
-        private static readonly List<TaskItem<SObject>> TrufflesToCollect = new List<TaskItem<SObject>>();
+        private static readonly List<TaskItem<SDObject>> AnimalProductsToCollect = new List<TaskItem<SDObject>>();
+        private static readonly List<TaskItem<SDObject>> TrufflesToCollect = new List<TaskItem<SDObject>>();
         private static readonly List<TaskItem<FarmAnimal>> AnimalProductsToHarvest = new List<TaskItem<FarmAnimal>>();
         private static readonly List<TaskItem<FarmAnimal>> UnpettedAnimals = new List<TaskItem<FarmAnimal>>();
         private static readonly List<Tuple<Building, int>> MissingHay = new List<Tuple<Building, int>>();
@@ -48,16 +47,16 @@ namespace DailyTasksReport.TaskEngines
 
             foreach (GameLocation farm in _gameFarms)
             {
-                foreach (var animal in farm.animals.Pairs)
+                foreach (KeyValuePair<long, FarmAnimal> animal in farm.animals.Pairs)
                     if (!animal.Value.wasPet.Value)
                         UnpettedAnimals.Add(new TaskItem<FarmAnimal>(farm, animal.Value.Position, animal.Value));
 
-                foreach (var building in farm.buildings)
+                foreach (Building? building in farm.buildings)
                 {
                     if (building.isUnderConstruction() || !(building.indoors.Value is AnimalHouse animalHouse))
                         continue;
 
-                    foreach (var animal in animalHouse.animals.Pairs)
+                    foreach (KeyValuePair<long, FarmAnimal> animal in animalHouse.animals.Pairs)
                         if (!animal.Value.wasPet.Value)
                             UnpettedAnimals.Add(new TaskItem<FarmAnimal>(animalHouse, animal.Value.Position, animal.Value));
                 }
@@ -73,7 +72,7 @@ namespace DailyTasksReport.TaskEngines
 
                     foreach (GameLocation farm in _gameFarms)
                     {
-                        foreach (var animal in UnpettedAnimals)
+                        foreach (TaskItem<FarmAnimal> animal in UnpettedAnimals)
                             animal.Location = farm.animals.FieldDict.ContainsKey(animal.Object.myID.Value)
                                 ? farm
                                 : animal.Object.home?.indoors.Value ?? null;
@@ -81,19 +80,19 @@ namespace DailyTasksReport.TaskEngines
                     break;
                 case AnimalsTaskId.AnimalProducts:
 
-                    AnimalProductsToCollect.RemoveAll(i =>
-                        !(i.Location.objects.TryGetValue(i.Position, out var obj) &&
+                    AnimalProductsToCollect.RemoveAll(i => i.Location != null &&
+                        !(i.Location.objects.TryGetValue(i.Position, out SDObject? obj) &&
                           obj.QualifiedItemId == i.Object.QualifiedItemId));
 
                     TrufflesToCollect.Clear();
                     AnimalProductsToHarvest.RemoveAll(animal =>
-                      string.IsNullOrEmpty(animal.Object.currentProduce.Value.ToString()) || animal.Object.health.Value <= 0);
+                      string.IsNullOrEmpty(animal.Object.currentProduce.Value) || animal.Object.health.Value <= 0);
 
                     CheckForTruffles(_gameFarms);
 
                     foreach (GameLocation farm in _gameFarms)
                     {
-                        foreach (var animal in AnimalProductsToHarvest)
+                        foreach (TaskItem<FarmAnimal> animal in AnimalProductsToHarvest)
                             animal.Location = farm.animals.ContainsKey(animal.Object.myID.Value)
                                             ? farm
                                             : animal.Object?.home?.indoors.Value ?? null;
@@ -105,11 +104,11 @@ namespace DailyTasksReport.TaskEngines
 
                     foreach (GameLocation farm in _gameFarms)
                     {
-                        foreach (var building in farm.buildings)
+                        foreach (Building? building in farm.buildings)
                         {
                             if (building.isUnderConstruction() || !(building.indoors.Value is AnimalHouse animalHouse)) continue;
-                            var count = animalHouse.numberOfObjectsWithName("Hay");
-                            var animalLimit = animalHouse.animalLimit.Value;
+                            int count = animalHouse.numberOfObjectsWithName("Hay");
+                            int animalLimit = animalHouse.animalLimit.Value;
                             if (count < animalLimit)
                                 MissingHay.Add(new Tuple<Building, int>(building, animalLimit - count));
                         }
@@ -120,7 +119,7 @@ namespace DailyTasksReport.TaskEngines
 
                     foreach (GameLocation farm in _gameFarms)
                     {
-                        foreach (var building in farm.buildings)
+                        foreach (Building? building in farm.buildings)
                         {
                             if (building.isUnderConstruction()) continue;
 
@@ -128,7 +127,7 @@ namespace DailyTasksReport.TaskEngines
                             {
                                 if (fishpond.HasUnresolvedNeeds())
                                 {
-                                    PondsNeedingAttention.Add(new Tuple<string, FishPond>(farm.DisplayName, fishpond));
+                                    PondsNeedingAttention.Add(Tuple.Create(farm.DisplayName, fishpond));
                                 }
                             }
                         }
@@ -139,7 +138,7 @@ namespace DailyTasksReport.TaskEngines
 
                     foreach (GameLocation farm in _gameFarms)
                     {
-                        foreach (var building in farm.buildings)
+                        foreach (Building? building in farm.buildings)
                         {
                             if (building.isUnderConstruction()) continue;
 
@@ -147,7 +146,7 @@ namespace DailyTasksReport.TaskEngines
                             {
                                 if (fishpond.output.Value != null)
                                 {
-                                    PondsWithItem.Add(new Tuple<string, FishPond>(farm.DisplayName, fishpond));
+                                    PondsWithItem.Add(Tuple.Create(farm.DisplayName, fishpond));
                                 }
                             }
                         }
@@ -163,15 +162,19 @@ namespace DailyTasksReport.TaskEngines
         {
             foreach (GameLocation farm in _gameFarms)
             {
-                foreach (var animal in farm.animals.Pairs)
+                foreach (KeyValuePair<long, FarmAnimal> animal in farm.animals.Pairs)
                 {
-                    if (!animal.Value.wasPet.Value)
-                        UnpettedAnimals.Add(new TaskItem<FarmAnimal>(farm, animal.Value.Position, animal.Value));
+                    if (animal.Value != null)
+                    {
+                        if (!animal.Value.wasPet.Value)
+                            UnpettedAnimals.Add(new TaskItem<FarmAnimal>(farm, animal.Value.Position, animal.Value));
 
-                    string currentProduce = animal.Value.currentProduce.Value?.ToString() ?? null;
-
-                    if ((int.TryParse(currentProduce, out int _) && Convert.ToInt32(currentProduce) > 0) && currentProduce != "430")
-                        AnimalProductsToHarvest.Add(new TaskItem<FarmAnimal>(farm, animal.Value.Position, animal.Value));
+                        if (animal.Value.currentProduce.Value != null)
+                        {
+                            if (animal.Value.currentProduce.Value != "430")
+                                AnimalProductsToHarvest.Add(new TaskItem<FarmAnimal>(farm, animal.Value.Position, animal.Value));
+                        }
+                    }
                 }
             }
         }
@@ -180,27 +183,28 @@ namespace DailyTasksReport.TaskEngines
 
         private static void CheckAnimals(AnimalHouse location)
         {
-            foreach (var animal in location.animals.Pairs)
+            foreach (KeyValuePair<long, FarmAnimal> animal in location.animals.Pairs)
             {
                 if (!animal.Value.wasPet.Value)
                     UnpettedAnimals.Add(new TaskItem<FarmAnimal>(location, animal.Value.position.Value, animal.Value));
 
 
-                string currentProduce = animal.Value.currentProduce.Value?.ToString();
-
-                if ((int.TryParse(currentProduce, out int _) && Convert.ToInt32(currentProduce) > 0) && currentProduce != "430")
-                    AnimalProductsToHarvest.Add(new TaskItem<FarmAnimal>(location, animal.Value.position.Value,
-                        animal.Value));
+                if (animal.Value.currentProduce.Value != null)
+                {
+                    if (animal.Value.currentProduce.Value != "430")
+                        AnimalProductsToHarvest.Add(new TaskItem<FarmAnimal>(location, animal.Value.position.Value,
+                            animal.Value));
+                }
             }
         }
 
         private static void CheckAnimalProductsInCoop(GameLocation coop)
         {
-            foreach (var pair in coop.objects.Pairs)
-                if (Array.BinarySearch(CollectableAnimalProducts, pair.Value.ParentSheetIndex) >= 0 &&
+            foreach (KeyValuePair<Vector2, SDObject> pair in coop.objects.Pairs)
+                if (Array.BinarySearch(CollectableAnimalProducts, pair.Value.ItemId) >= 0 &&
                     (int)pair.Key.X <= coop.map.DisplayWidth / Game1.tileSize &&
                     (int)pair.Key.Y <= coop.map.DisplayHeight / Game1.tileSize)
-                    AnimalProductsToCollect.Add(new TaskItem<SObject>(coop, pair.Key, pair.Value));
+                    AnimalProductsToCollect.Add(new TaskItem<SDObject>(coop, pair.Key, pair.Value));
         }
 
         private static void CheckForTruffles(List<GameLocation> farms)
@@ -208,11 +212,10 @@ namespace DailyTasksReport.TaskEngines
 
             foreach (GameLocation farm in farms)
             {
-                foreach (var pair in farm.objects.Pairs)
+                foreach (KeyValuePair<Vector2, SDObject> pair in farm.objects.Pairs)
 
                     if (pair.Value.QualifiedItemId == "(O)430")
-                        TrufflesToCollect.Add(new TaskItem<SObject>(farm, pair.Key, pair.Value));
-
+                        TrufflesToCollect.Add(new TaskItem<SDObject>(farm, pair.Key, pair.Value));
             }
         }
 
@@ -244,8 +247,7 @@ namespace DailyTasksReport.TaskEngines
         private static void Display_MenuChanged(object? sender, MenuChangedEventArgs e)
         {
             if (e.OldMenu is PurchaseAnimalsMenu ||
-                e.OldMenu is NamingMenu ||
-                e.OldMenu?.GetType().FullName == "FarmExpansion.Menus.FEPurchaseAnimalsMenu")
+                e.OldMenu is NamingMenu)
                 ReScanUnpettedAnimals();
         }
         public override void Clear()
@@ -269,29 +271,29 @@ namespace DailyTasksReport.TaskEngines
 
             if (!Enabled) return rpItem;
 
-            var stringBuilder = new StringBuilder();
+            StringBuilder stringBuilder = new StringBuilder();
 
             switch ((AnimalsTaskId)TaskId)
             {
                 case AnimalsTaskId.UnpettedAnimals:
                     if (UnpettedAnimals.Count == 0) return rpItem;
 
-
-                    foreach (var animal in UnpettedAnimals)
+                    foreach (TaskItem<FarmAnimal>? animal in UnpettedAnimals.OrderBy(p => p.Object.displayName))
                     {
                         try
                         {
                             string label;
                             if (_gameFarms.Count == 1)
                             {
-                                label = animal.Object.displayType + " " + animal.Object.displayName + I18n.Tasks_At() + $"{(animal.Location?.Name ?? "????")} ({animal.Object.Tile.X},{animal.Object.Tile.Y})";
+                                label = $"{animal.Object.displayType} {animal.Object.displayName}{I18n.Tasks_At()}{(animal.Location?.DisplayName ?? "????")} ({animal.Object.Tile.X},{animal.Object.Tile.Y})";
                             }
                             else
                             {
-                                label = animal.Object.displayType + " " + animal.Object.displayName + I18n.Tasks_At() + $"{(animal.Location?.Name ?? "????")} ({animal.Location?.GetParentLocation().DisplayName ?? ""}-{animal.Object.Tile.X},{animal.Object.Tile.Y})";
+                                label = $"{animal.Object.displayType} {animal.Object.displayName}{I18n.Tasks_At()}{TokenParser.ParseText(animal.Object.home.GetData().Name)} ({animal.Location?.GetParentLocation().DisplayName ?? ""}-{animal.Object.Tile.X},{animal.Object.Tile.Y})";
                             }
                             rpItem.Add(new ReportReturnItem
                             {
+                                SortKey = animal.Object.displayName,
                                 Label = label,
                                 WarpTo = animal.Location == null ? null : new Tuple<string, int, int>(animal.Location.Name, (int)animal.Object.Tile.X, (int)animal.Object.Tile.Y)
                             });
@@ -307,8 +309,8 @@ namespace DailyTasksReport.TaskEngines
                     {
                         rpItem.Add(new ReportReturnItem
                         {
-                            Label = "Fish Pond" + I18n.Tasks_At() + $"{fpond.Item1} (" + fpond.Item2.tileX.Value.ToString() + ", " + fpond.Item2.tileY.Value.ToString() + ") wants something.",
-                            WarpTo = new Tuple<string, int, int>(fpond.Item1, fpond.Item2.tileX.Value + fpond.Item2.tilesWide.Value - 1, fpond.Item2.tileY.Value + fpond.Item2.tilesHigh.Value)
+                            Label = $"Fish Pond{I18n.Tasks_At()}{fpond.Item1} ({fpond.Item2.tileX.Value},{fpond.Item2.tileY.Value}) wants something.",
+                            WarpTo = Tuple.Create(fpond.Item1, fpond.Item2.tileX.Value + fpond.Item2.tilesWide.Value - 1, fpond.Item2.tileY.Value + fpond.Item2.tilesHigh.Value)
                         });
                     }
 
@@ -320,8 +322,8 @@ namespace DailyTasksReport.TaskEngines
                     {
                         rpItem.Add(new ReportReturnItem
                         {
-                            Label = "Fish Pond" + I18n.Tasks_At() + $"{fpond.Item1} (" + fpond.Item2.tileX.ToString() + ", " + fpond.Item2.tileY.ToString() + ") have items to collect.",
-                            WarpTo = new Tuple<string, int, int>(fpond.Item1, fpond.Item2.tileX.Value + fpond.Item2.tilesWide.Value - 1, fpond.Item2.tileY.Value + fpond.Item2.tilesHigh.Value)
+                            Label = $"Fish Pond{I18n.Tasks_At()}{fpond.Item1} ({fpond.Item2.tileX},{fpond.Item2.tileY}) have items to collect.",
+                            WarpTo = Tuple.Create(fpond.Item1, fpond.Item2.tileX.Value + fpond.Item2.tilesWide.Value - 1, fpond.Item2.tileY.Value + fpond.Item2.tilesHigh.Value)
                         });
                     }
 
@@ -331,37 +333,38 @@ namespace DailyTasksReport.TaskEngines
                         return rpItem;
 
 
-                    foreach (var animal in AnimalProductsToHarvest)
+                    foreach (TaskItem<FarmAnimal> animal in AnimalProductsToHarvest)
                     {
-                        var currentProduce = animal.Object.currentProduce.Value.ToString();
+                        string currentProduce = animal.Object.currentProduce.Value;
                         if (!_config.ProductFromAnimal(currentProduce)) continue;
+
 
                         rpItem.Add(new ReportReturnItem
                         {
-                            Label = $"{animal.Object.displayType} {animal.Object.displayName}" + I18n.Tasks_Animal_Has() + $"{ObjectsNames[currentProduce]}" + I18n.Tasks_At() + $"{animal.Location?.DisplayName ?? "????"} ({animal.Object.Tile.X}, {animal.Object.Tile.X})",
-                            WarpTo = animal.Location == null ? null : new Tuple<string, int, int>(animal.Location.DisplayName, (int)animal.Object.Tile.X, (int)animal.Object.Tile.Y)
+                            SortKey = animal.Object.displayName,
+                            Label = $"{animal.Object.displayType} {animal.Object.displayName}{I18n.Tasks_Animal_Has()}{ObjectsNames[currentProduce]}{I18n.Tasks_At()}{GetLocationDisplayName(animal.Location?.Name ?? "????")} ({animal.Object.Tile.X},{animal.Object.Tile.X})",
+                            WarpTo = animal.Location == null ? null : Tuple.Create(animal.Location.NameOrUniqueName, (int)animal.Object.Tile.X, (int)animal.Object.Tile.Y)
                         });
                     }
 
-                    foreach (var product in AnimalProductsToCollect)
+                    foreach (TaskItem<SDObject> product in AnimalProductsToCollect)
                     {
-                        if (!_config.ProductToCollect(product.Object.ParentSheetIndex)) continue;
+                        if (!_config.ProductToCollect(product.Object.ItemId)) continue;
 
                         rpItem.Add(new ReportReturnItem
                         {
-                            Label = $"{product.Object.DisplayName}" + I18n.Tasks_At() + $"{product.Location?.DisplayName??"???" } ({product.Position.X}, {product.Position.Y})",
-                            WarpTo = product.Location == null ? null : new Tuple<string, int, int>(product.Location?.DisplayName??"???", (int)product.Position.X, (int)product.Position.Y)
+                            Label = $"{product.Object.DisplayName}{I18n.Tasks_At()}{GetLocationDisplayName(product.Location?.Name ?? "????")} ({product.Position.X},{product.Position.Y})",
+                            WarpTo = product.Location == null ? null : Tuple.Create(product.Location.NameOrUniqueName, (int)product.Position.X, (int)product.Position.Y)
                         });
                     }
 
                     if (!_config.AnimalProducts["Truffle"]) break;
-                    foreach (var product in TrufflesToCollect)
+                    foreach (TaskItem<SDObject> product in TrufflesToCollect)
                     {
-
                         rpItem.Add(new ReportReturnItem
                         {
-                            Label = $"{product.Object.DisplayName}" + I18n.Tasks_At() + $"{product.Location?.DisplayName??"???"} ({product.Position.X}, {product.Position.Y})",
-                            WarpTo = product.Location == null ? null : new Tuple<string, int, int>(product.Location?.DisplayName??"???", (int)product.Position.X, (int)product.Position.Y)
+                            Label = $"{product.Object.DisplayName}{I18n.Tasks_At()}{product.Location?.DisplayName ?? "???"} ({product.Position.X},{product.Position.Y})",
+                            WarpTo = product.Location == null ? null : Tuple.Create(product.Location.NameOrUniqueName, (int)product.Position.X, (int)product.Position.Y)
                         });
                     }
                     break;
@@ -369,17 +372,14 @@ namespace DailyTasksReport.TaskEngines
                 case AnimalsTaskId.MissingHay:
                     if (MissingHay.Count == 0) return rpItem;
 
-                    //stringBuilder.Append("Feedbenches not full of hay:^");
-
-                    foreach (var tuple in MissingHay)
+                    foreach (Tuple<Building, int> tuple in MissingHay)
                     {
-                        var s = tuple.Item2 == 1 ? I18n.Tasks_Animal_MissingHay() : I18n.Tasks_Animal_MissingHays();
+                        string s = tuple.Item2 == 1 ? I18n.Tasks_Animal_MissingHay() : I18n.Tasks_Animal_MissingHays();
 
                         rpItem.Add(new ReportReturnItem
                         {
-                            Label = $"{tuple.Item2}" + s + $"{tuple.Item1.indoors.Value.Name} ({tuple.Item1.GetParentLocation().DisplayName}-{tuple.Item1.tileX},{tuple.Item1.tileY})",
-                            WarpTo = new Tuple<string, int, int>(
-
+                            Label = $"{tuple.Item2}{s}{tuple.Item1.indoors.Value.Name} ({tuple.Item1.GetParentLocation().DisplayName}-{tuple.Item1.tileX},{tuple.Item1.tileY})",
+                            WarpTo = Tuple.Create(
                               tuple.Item1.indoors.Value.NameOrUniqueName,
                                tuple.Item1.tileX.Value,
                                tuple.Item1.tileY.Value
@@ -399,9 +399,9 @@ namespace DailyTasksReport.TaskEngines
         {
             List<ReportReturnItem> prItem = new List<ReportReturnItem> { };
 
-            if (!Enabled) return default;
+            if (!Enabled) return prItem;
 
-            var count = 0;
+            int count = 0;
 
             UpdateList();
 
@@ -428,8 +428,8 @@ namespace DailyTasksReport.TaskEngines
                 case AnimalsTaskId.AnimalProducts:
                     if (_config.AnimalProducts["Truffle"])
                         count = TrufflesToCollect.Count;
-                    count += AnimalProductsToCollect.Count(p => _config.ProductToCollect(p.Object.ParentSheetIndex));
-                    count += AnimalProductsToHarvest.Count(p => _config.ProductFromAnimal(p.Object.currentProduce.Value.ToString()));
+                    count += AnimalProductsToCollect.Count(p => _config.ProductToCollect(p.Object.ItemId));
+                    count += AnimalProductsToHarvest.Count(p => _config.ProductFromAnimal(p.Object.currentProduce.Value));
                     if (count > 0)
                     {
                         prItem.Add(new ReportReturnItem() { Label = I18n.Tasks_Animal_Uncollected(), Details = count.ToString() });
@@ -468,7 +468,7 @@ namespace DailyTasksReport.TaskEngines
 
             foreach (GameLocation farm in _gameFarms)
             {
-                foreach (var building in farm.buildings)
+                foreach (Building? building in farm.buildings)
                 {
                     if (building.isUnderConstruction()) continue;
 
@@ -479,22 +479,22 @@ namespace DailyTasksReport.TaskEngines
                             CheckAnimals(animalHouse);
 
                             // Check for object in Coop
-                            if (building is Coop)
+                            if (building.GetData()?.ValidOccupantTypes?.Contains("Coop") ?? false)
                                 CheckAnimalProductsInCoop(animalHouse);
 
                             // Check for hay
-                            var count = animalHouse.numberOfObjectsWithName("Hay");
-                            var animalLimit = animalHouse.animalLimit.Value;
+                            int count = animalHouse.numberOfObjectsWithName("Hay");
+                            int animalLimit = animalHouse.animalLimit.Value;
                             if (count < animalLimit)
                                 MissingHay.Add(new Tuple<Building, int>(building, animalLimit - count));
                             break;
 
                         case SlimeHutch slimeHutch:
                             // Check slime balls
-                            foreach (var pair in building.indoors.Value.objects.Pairs)
+                            foreach (KeyValuePair<Vector2, SDObject> pair in building.indoors.Value.objects.Pairs)
 
                                 if (new List<string> { "(O)56", "(O)57", "(O)58", "(O)59", "(O)60", "(O)61" }.Contains(pair.Value.QualifiedItemId))
-                                    AnimalProductsToCollect.Add(new TaskItem<SObject>(slimeHutch, pair.Key, pair.Value));
+                                    AnimalProductsToCollect.Add(new TaskItem<SDObject>(slimeHutch, pair.Key, pair.Value));
                             break;
                         default:
                             break;
@@ -503,11 +503,11 @@ namespace DailyTasksReport.TaskEngines
                     {
                         if (fishpond.HasUnresolvedNeeds())
                         {
-                            PondsNeedingAttention.Add(new Tuple<string, FishPond>(farm.Name, fishpond));
+                            PondsNeedingAttention.Add(Tuple.Create(farm.Name, fishpond));
                         }
                         if (fishpond.output.Value != null)
                         {
-                            PondsWithItem.Add(new Tuple<string, FishPond>(farm.Name, fishpond));
+                            PondsWithItem.Add(Tuple.Create(farm.Name, fishpond));
                         }
                     }
                 }

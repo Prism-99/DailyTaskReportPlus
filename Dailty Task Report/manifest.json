@@ -1,10 +1,10 @@
 ﻿{
 	"Name": "Daily Tasks Report Plus",
 	"Author": "Prism 99",
-	"Version": " 1.5.0",
-	"Description": "Shows information about some daily tasks in your farm",
+	"Version": " 1.5.1",
+	"Description": "Shows information about some daily tasks in your farm.",
 	"UniqueID": "Prism99.DailyTasksReportPlus",
 	"EntryDll": "DailyTasksReportPlus.dll",
 	"MinimumApiLevel": "4.0.0",
-	"UpdateKeys": [  ]
+	"UpdateKeys": [ "Nexus:20871" ]
 }
