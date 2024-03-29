@@ -12,7 +12,7 @@ namespace DailyTasksReport.UI
 
         private Rectangle _buttonRect;
         private Rectangle _insideRect;
-
+        private float _uiscale;
         private int _questCount;
         private string _hoverText = string.Empty;
 
@@ -20,7 +20,7 @@ namespace DailyTasksReport.UI
         {
             _parent = parent;
             _openReport = openReport;
-
+            _uiscale = Game1.options.uiScale;
             _questCount = Game1.player.questLog.Count;
             UpdatePosition();
 
@@ -30,6 +30,12 @@ namespace DailyTasksReport.UI
 
         private void GameLoop_UpdateTicked(object? sender, UpdateTickedEventArgs e)
         {
+            if (Game1.options.uiScale != _uiscale)
+            {
+                _uiscale = Game1.options.uiScale;
+                UpdatePosition();
+            }
+
             if (_questCount == Game1.player.questLog.Count) return;
 
             _questCount = Game1.player.questLog.Count;
@@ -46,10 +52,10 @@ namespace DailyTasksReport.UI
         {
             UpdatePosition();
         }
-
+        
         private void UpdatePosition()
         {
-            xPositionOnScreen=(int)( Game1.viewport.Width * Game1.options.zoomLevel) - 140;// Game1.viewport.Width - 300 + 212;
+            xPositionOnScreen=(int)( Game1.viewport.Width * Game1.options.zoomLevel/Game1.options.uiScale) - 140;// Game1.viewport.Width - 300 + 212;
             yPositionOnScreen = Game1.tileSize / 8 + 225;
             if (_questCount > 0)
                 yPositionOnScreen +=(int)( 14);

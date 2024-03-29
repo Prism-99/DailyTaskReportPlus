@@ -15,6 +15,10 @@ namespace DailyTasksReport.UI
         //
         //  translations
         //
+        public static string Tasks_In()
+        {
+            return GetByKey("tasks.location.in");
+        }
         //
         //  task reporting
         //

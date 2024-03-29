@@ -27,7 +27,7 @@
         Birthdays = 111,
         TravelingMerchant = 112,
         FruitTrees = 113,
-        SkipFlowers=114,
+        SkipFlowers = 114,
 
         /* Animal products */
         AllAnimalProducts = 200,
@@ -50,7 +50,7 @@
         CharcoalKiln = 303,
         CheesePress = 304,
         Crystalarium = 305,
-        Dehydrator=321,
+        Dehydrator = 321,
         Furnace = 306,
         Keg = 307,
         LightningRod = 308,
@@ -78,6 +78,7 @@
         DrawBuildingsMissingHay = 507,
         DrawTruffles = 508,
         DrawCrabpotsNotBaited = 509,
-        DrawCask = 510
+        DrawCask = 510,
+        BounceBubbles = 511
     }
 }

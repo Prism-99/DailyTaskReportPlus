@@ -82,6 +82,7 @@ namespace DailyTasksReport.UI
             _options.Add(new Checkbox("Show report button", OptionsEnum.ShowReportButton, parent.Config));
             _options.Add(new Checkbox("Display bubbles", OptionsEnum.DisplayBubbles, parent.Config, true,
                 _slots[0].bounds.Width));
+            _options.Add(new Checkbox("Bounce Bubbles", OptionsEnum.BounceBubbles, parent.Config));
             _options.Add(new Checkbox("Show detailed info", OptionsEnum.ShowDetailedInfo, parent.Config));
             _options.Add(new OptionsElement("Report:"));
             _options.Add(new Checkbox("New recipe on TV", OptionsEnum.NewRecipeOnTv, parent.Config));

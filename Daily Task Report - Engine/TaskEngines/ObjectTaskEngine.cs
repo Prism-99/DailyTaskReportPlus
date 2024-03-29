@@ -216,7 +216,7 @@ namespace DailyTasksReport.TaskEngines
                 if (CrabPots.ContainsKey(location))
                 {
                     List<Vector2> locationCrabPost = location.Objects.Pairs.Where(p => p.Value is CrabPot).Select(p => p.Key).ToList();
-                    CrabPots[location].AddRange(locationMachines);
+                    CrabPots[location].AddRange(locationCrabPost);
                 }
 
                 if (!location.IsBuildableLocation()) continue;
@@ -280,7 +280,7 @@ namespace DailyTasksReport.TaskEngines
                     {
                         prItem.Add(new ReportReturnItem
                         {
-                            Label = $"{machine.DisplayName}{I18n.Tasks_Object_With()}{quality} {heldObject.DisplayName}{I18n.Tasks_At()}{GetLocationDisplayName(location.Key.Name)} ({position.X},{position.Y})",
+                            Label = $"{machine.DisplayName}{I18n.Tasks_Object_With()}{quality}{heldObject.DisplayName}{I18n.Tasks_At()}{FormatLocation( location.Key.Name,null,position)}",
                             WarpTo = Tuple.Create(location.Key.Name, (int)position.X, (int)position.Y)
                         }); ;
                     }
@@ -320,11 +320,13 @@ namespace DailyTasksReport.TaskEngines
                 obj = item.Value;
                 if ((_config.Machines.ContainsKey(obj.name) || obj is Cask) &&
                         Machines.TryGetValue(e.Location, out var list))
+                {
                     if (!list.Contains(pos))
                         list.Add(pos);
-                    else if (obj is CrabPot && CrabPots.TryGetValue(e.Location, out list))
-                        if (!list.Contains(pos))
-                            list.Add(pos);
+                }
+                else if (obj is CrabPot && CrabPots.TryGetValue(e.Location, out list))
+                    if (!list.Contains(pos))
+                        list.Add(pos);
             }
 
             foreach (KeyValuePair<Vector2, SDObject> item in e.Removed)
@@ -333,7 +335,7 @@ namespace DailyTasksReport.TaskEngines
                 obj = item.Value;
                 if (Machines.TryGetValue(e.Location, out var list))
                     list.Remove(pos);
-                if (CrabPots.TryGetValue(e.Location, out list))
+                else if (CrabPots.TryGetValue(e.Location, out list))
                     list.Remove(pos);
                 break;
             }

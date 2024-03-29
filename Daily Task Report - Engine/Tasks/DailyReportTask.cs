@@ -34,9 +34,14 @@ namespace DailyTasksReport.Tasks
         protected static void DrawBubble(SpriteBatch b, Texture2D texture, Rectangle sourceRectangle,
         Vector2 destinationPosition)
         {
-            var r = new Rectangle((int)(destinationPosition.X * Game1.options.zoomLevel), (int)(destinationPosition.Y * Game1.options.zoomLevel), Game1.tileSize * 3 / 4,
-                Game1.tileSize * 3 / 4);
-            b.Draw(Game1.mouseCursors, r, new Rectangle(141, 465, 20, 24), Color.White * 0.75f);
+            float bubbleBounce = 0;
+            if (_config.BounceBubbles)
+            {
+                bubbleBounce = 4f * (float)Math.Round(Math.Sin(Game1.currentGameTime.TotalGameTime.TotalMilliseconds / 250.0), 2);
+            }
+            var r = new Rectangle((int)(destinationPosition.X * Game1.options.zoomLevel/ Game1.options.desiredUIScale), (int)(destinationPosition.Y  * Game1.options.zoomLevel/ Game1.options.desiredUIScale + bubbleBounce),(int)(( Game1.tileSize * 3 / 4) * Game1.options.zoomLevel/ Game1.options.desiredUIScale),
+             ( int)(  (Game1.tileSize * 3 / 4)*Game1.options.zoomLevel/ Game1.options.desiredUIScale));
+             b.Draw(Game1.mouseCursors, r, new Rectangle(141, 465, 20, 24), Color.White * 0.75f);
             r.Offset(r.Width / 4, r.Height / 6);
             r.Height /= 2;
             r.Width /= 2;

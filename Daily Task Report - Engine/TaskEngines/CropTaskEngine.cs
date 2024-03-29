@@ -497,7 +497,7 @@ namespace DailyTasksReport.TaskEngines
                                 prItem.Add(new ReportReturnItem
                                 {
                                     SortKey = ObjectsNames[item.Item2.crop.indexOfHarvest.Value],
-                                    Label = $"{ObjectsNames[item.Item2.crop.indexOfHarvest.Value]}{I18n.Tasks_At()}{GetLocationDisplayName(location)} ({item.Item1.X},{item.Item1.Y})",
+                                    Label = $"{ObjectsNames[item.Item2.crop.indexOfHarvest.Value]}{I18n.Tasks_At()}{FormatLocation(location,null,item.Item1)}",
                                     WarpTo = Tuple.Create(location, (int)item.Item1.X, (int)item.Item1.Y)
                                 });
                             }
@@ -529,7 +529,7 @@ namespace DailyTasksReport.TaskEngines
                             prItem.Add(new ReportReturnItem
                             {
                                 SortKey = ObjectsNames[item.Item2.crop.indexOfHarvest.Value],
-                                Label = $"{ObjectsNames[item.Item2.crop.indexOfHarvest.Value]}{I18n.Tasks_At()}{GetLocationDisplayName(_locationName)} ({item.Item1.X},{item.Item1.Y})",
+                                Label = $"{ObjectsNames[item.Item2.crop.indexOfHarvest.Value]}{I18n.Tasks_At()}{FormatLocation(_locationName,null,item.Item1)}",
                                 WarpTo = Tuple.Create(_locationName, (int)item.Item1.X, (int)item.Item1.Y)
                             });
                         }
@@ -538,7 +538,7 @@ namespace DailyTasksReport.TaskEngines
                     {
                         prItem.Add(new ReportReturnItem
                         {
-                            Label = $"Unknown Id:  {item.Item2.crop.indexOfHarvest.Value}{I18n.Tasks_At()}{GetLocationDisplayName(_locationName)} ({item.Item1.X},{item.Item1.Y})",
+                            Label = $"Unknown Id:  {item.Item2.crop.indexOfHarvest.Value}{I18n.Tasks_At()}{FormatLocation(_locationName,null,item.Item1)}",
                             WarpTo = Tuple.Create(_locationName, (int)item.Item1.X, (int)item.Item1.Y)
                         }); ;
                     }

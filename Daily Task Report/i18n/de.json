@@ -1,5 +1,5 @@
 ﻿{
-//
+  //
   //  daily tasks
   //
   "tasks.complete": "Alles erledigt!.",
@@ -67,5 +67,9 @@
   //  terrain tasks
   //
   "tasks.terrain.fence": "Beschädigter Zaun am Bauernhof ",
-  "tasks.terrain.damaged": " beschädigte zäune: "
+  "tasks.terrain.damaged": " beschädigte zäune: ",
+  //
+  //  location display
+  //
+  "tasks.location.in": " in "
 }

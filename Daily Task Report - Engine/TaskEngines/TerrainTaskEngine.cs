@@ -38,7 +38,7 @@ namespace DailyTasksReport.TaskEngines
                     {
                         prItem.Add(new ReportReturnItem
                         {
-                            Label = $"{I18n.Tasks_Terrain_Fence()}{GetLocationDisplayName(location.DisplayName)}{I18n.Tasks_At()}({f.TileLocation.X},{f.TileLocation.Y})",
+                            Label = $"{I18n.Tasks_Terrain_Fence()}{FormatLocation(location.Name,null,f.TileLocation)}",
                             WarpTo = Tuple.Create(location.Name, (int)f.TileLocation.X, (int)f.TileLocation.Y)
                         });
                     }

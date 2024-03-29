@@ -28,7 +28,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Tasks\ObjectsTask.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Tasks\PetTask.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Tasks\TerrainTask.cs" />
-    <Compile Include="..\Daily Task Report - Engine\Tasks\DailyReportTask.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Tasks\DailyReportTask.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Tasks\TaskIds.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Tasks\TaskItem.cs" />
   </ItemGroup>

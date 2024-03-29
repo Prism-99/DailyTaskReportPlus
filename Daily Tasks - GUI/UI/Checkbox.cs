@@ -80,6 +80,10 @@ namespace DailyTasksReport.UI
         {
             switch (_option)
             {
+                case OptionsEnum.BounceBubbles:
+                    _isChecked = _config.BounceBubbles;
+
+                    break;
                 case OptionsEnum.ShowReportButton:
                     _isChecked = _config.DisplayReportButton;
                     break;
@@ -218,7 +222,7 @@ namespace DailyTasksReport.UI
                     break;
 
                 case OptionsEnum.Dehydrator:
-                    _isChecked = _config.Machines["Dehyrdator"];
+                    _isChecked = _config.Machines["Dehydrator"];
                     break;
 
                 case OptionsEnum.Furnace:
@@ -387,6 +391,10 @@ namespace DailyTasksReport.UI
             // Change options
             switch (_option)
             {
+                case OptionsEnum.BounceBubbles:
+                    _config.BounceBubbles = _isChecked;
+                    break;
+
                 case OptionsEnum.ShowReportButton:
                     _config.DisplayReportButton = _isChecked;
                     break;

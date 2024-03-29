@@ -37,8 +37,8 @@ namespace DailyTasksReport.Tasks
 
             string sHeader = (ObjectsTaskId)_Engine.TaskId switch
             {
-                ObjectsTaskId.NotBaitedCrabpots => I18n.Tasks_Object_Crab(),
-                ObjectsTaskId.UncollectedCrabpots => I18n.Tasks_Object_CrabPot(),
+                ObjectsTaskId.NotBaitedCrabpots => I18n.Tasks_Object_CrabPot(),
+                ObjectsTaskId.UncollectedCrabpots => I18n.Tasks_Object_Crab(),
                 ObjectsTaskId.UncollectedMachines => I18n.Tasks_Object_Machine(),
                 _ => ""
             };
@@ -62,10 +62,10 @@ namespace DailyTasksReport.Tasks
                 for (var y = yStart; y <= yLimit; ++y)
                 {
                     if (!Game1.currentLocation.objects.TryGetValue(new Vector2(x, y), out var o)) continue;
+          
+                    var v = Game1.GlobalToLocal(Game1.viewport, new Vector2(o.TileLocation.X * Game1.tileSize , o.TileLocation.Y * Game1.tileSize - 8)) ;
 
-                    var v = new Vector2(o.TileLocation.X * Game1.tileSize - Game1.viewport.X + Game1.tileSize / 8f,
-                        o.TileLocation.Y * Game1.tileSize - Game1.viewport.Y - Game1.tileSize * 5 / 4f);
-
+                    //var dRect = new Rectangle((int)o.TileLocation.X, (int)o.TileLocation.Y, 13, 13);
                     var heldObject = o.heldObject.Value;
                     switch (o)
                     {
@@ -78,7 +78,7 @@ namespace DailyTasksReport.Tasks
                             break;
 
                         case CrabPot cp when _config.DrawBubbleCrabpotsNotBaited && cp.bait.Value == null && !((ObjectTaskEngine)_Engine)._hasLuremaster:
-                            DrawBubble(b, Game1.objectSpriteSheet, new Rectangle(209, 450, 13, 13), v);
+                            DrawBubble(b, Game1.objectSpriteSheet, new Rectangle(209, 450 ,13, 13 ), v);
                             break;
 
                         default:

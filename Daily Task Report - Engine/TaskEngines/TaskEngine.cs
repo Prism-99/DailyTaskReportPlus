@@ -1,4 +1,5 @@
-﻿using StardewValley.TokenizableStrings;
+﻿using DailyTasksReport.UI;
+using StardewValley.TokenizableStrings;
 
 namespace DailyTasksReport.TaskEngines
 {
@@ -30,7 +31,21 @@ namespace DailyTasksReport.TaskEngines
             Clear();
             FirstScan();
         }
+        internal string FormatLocation(string gameLocation, string? buildingName, int x, int y)
+        {
+            return FormatLocation(gameLocation, buildingName,new Vector2( x, y));
+        }
+        internal string FormatLocation(string gameLocation, string? buildingName, Vector2 position)
+        {
+            string gameLocationDisplayName=GetLocationDisplayName(gameLocation);
 
+            if(buildingName == null)
+            {
+                return $"'{gameLocationDisplayName}' ({position.X},{position.Y})";
+            }
+
+            return $"'{gameLocationDisplayName}'{I18n.Tasks_In()}'{TokenParser.ParseText(buildingName)}' ({position.X},{position.Y})";
+        }
         internal string GetLocationDisplayName(string locationName)
         {
             if(Game1.getLocationFromName(locationName) != null){

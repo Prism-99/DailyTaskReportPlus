@@ -22,7 +22,7 @@ namespace DailyTasksReport
         /// <summary> Display bubbles for items in the report that normally does not display bubbles. </summary>
         public bool DisplayBubbles { get; set; } = true;
 
-
+        public bool BounceBubbles {  get; set; } = true;
         public bool DrawBubbleUnpettedAnimals { get; set; } = true;
         public bool DrawBubbleTruffles { get; set; } = true;
         public bool DrawBubbleAnimalsWithProduce { get; set; } = true;

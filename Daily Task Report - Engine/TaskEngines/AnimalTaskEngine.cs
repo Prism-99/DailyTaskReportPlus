@@ -285,11 +285,11 @@ namespace DailyTasksReport.TaskEngines
                             string label;
                             if (_gameFarms.Count == 1)
                             {
-                                label = $"{animal.Object.displayType} {animal.Object.displayName}{I18n.Tasks_At()}{(animal.Location?.DisplayName ?? "????")} ({animal.Object.Tile.X},{animal.Object.Tile.Y})";
+                                label = $"{animal.Object.displayType} {animal.Object.displayName}{I18n.Tasks_At()}{FormatLocation(animal.Location?.Name ?? "????", null, animal.Object.Tile)}";
                             }
                             else
                             {
-                                label = $"{animal.Object.displayType} {animal.Object.displayName}{I18n.Tasks_At()}{TokenParser.ParseText(animal.Object.home.GetData().Name)} ({animal.Location?.GetParentLocation().DisplayName ?? ""}-{animal.Object.Tile.X},{animal.Object.Tile.Y})";
+                                label = $"{animal.Object.displayType} {animal.Object.displayName}{I18n.Tasks_At()}{FormatLocation(animal.Location?.GetParentLocation().Name ?? "????", animal.Object.home?.GetData().Name ?? "????", animal.Object.Tile)}";
                             }
                             rpItem.Add(new ReportReturnItem
                             {
@@ -309,7 +309,7 @@ namespace DailyTasksReport.TaskEngines
                     {
                         rpItem.Add(new ReportReturnItem
                         {
-                            Label = $"Fish Pond{I18n.Tasks_At()}{fpond.Item1} ({fpond.Item2.tileX.Value},{fpond.Item2.tileY.Value}) wants something.",
+                            Label = $"Fish Pond{I18n.Tasks_At()}{FormatLocation(fpond.Item1, null, fpond.Item2.tileX.Value, fpond.Item2.tileY.Value)} wants something.",
                             WarpTo = Tuple.Create(fpond.Item1, fpond.Item2.tileX.Value + fpond.Item2.tilesWide.Value - 1, fpond.Item2.tileY.Value + fpond.Item2.tilesHigh.Value)
                         });
                     }
@@ -322,7 +322,7 @@ namespace DailyTasksReport.TaskEngines
                     {
                         rpItem.Add(new ReportReturnItem
                         {
-                            Label = $"Fish Pond{I18n.Tasks_At()}{fpond.Item1} ({fpond.Item2.tileX},{fpond.Item2.tileY}) have items to collect.",
+                            Label = $"Fish Pond{I18n.Tasks_At()}{FormatLocation(fpond.Item1, null, fpond.Item2.tileX, fpond.Item2.tileY)} have items to collect.",
                             WarpTo = Tuple.Create(fpond.Item1, fpond.Item2.tileX.Value + fpond.Item2.tilesWide.Value - 1, fpond.Item2.tileY.Value + fpond.Item2.tilesHigh.Value)
                         });
                     }
@@ -342,7 +342,7 @@ namespace DailyTasksReport.TaskEngines
                         rpItem.Add(new ReportReturnItem
                         {
                             SortKey = animal.Object.displayName,
-                            Label = $"{animal.Object.displayType} {animal.Object.displayName}{I18n.Tasks_Animal_Has()}{ObjectsNames[currentProduce]}{I18n.Tasks_At()}{GetLocationDisplayName(animal.Location?.Name ?? "????")} ({animal.Object.Tile.X},{animal.Object.Tile.X})",
+                            Label = $"{animal.Object.displayType} {animal.Object.displayName}{I18n.Tasks_Animal_Has()}{ObjectsNames[currentProduce]}{I18n.Tasks_At()}{FormatLocation(animal.Location.GetParentLocation().Name, animal.Location?.Name ?? "????", animal.Object.Tile)}",
                             WarpTo = animal.Location == null ? null : Tuple.Create(animal.Location.NameOrUniqueName, (int)animal.Object.Tile.X, (int)animal.Object.Tile.Y)
                         });
                     }
@@ -350,10 +350,13 @@ namespace DailyTasksReport.TaskEngines
                     foreach (TaskItem<SDObject> product in AnimalProductsToCollect)
                     {
                         if (!_config.ProductToCollect(product.Object.ItemId)) continue;
-
+                        Tuple<GameLocation?, GameLocation?> locationDetails = GetLocationAndBuilding(product.Location);
+                        GameLocation? productLocation = locationDetails.Item1;
+                        GameLocation? productBuilding = locationDetails.Item2;
+                        
                         rpItem.Add(new ReportReturnItem
                         {
-                            Label = $"{product.Object.DisplayName}{I18n.Tasks_At()}{GetLocationDisplayName(product.Location?.Name ?? "????")} ({product.Position.X},{product.Position.Y})",
+                            Label = $"{product.Object.DisplayName}{I18n.Tasks_At()}{FormatLocation(productLocation?.Name ?? "????", productBuilding?.Name, product.Position)}",
                             WarpTo = product.Location == null ? null : Tuple.Create(product.Location.NameOrUniqueName, (int)product.Position.X, (int)product.Position.Y)
                         });
                     }
@@ -361,9 +364,12 @@ namespace DailyTasksReport.TaskEngines
                     if (!_config.AnimalProducts["Truffle"]) break;
                     foreach (TaskItem<SDObject> product in TrufflesToCollect)
                     {
+                        Tuple<GameLocation?, GameLocation?> locationDetails = GetLocationAndBuilding(product.Location);
+                        GameLocation? productLocation = locationDetails.Item1;
+                        GameLocation? productBuilding = locationDetails.Item2;
                         rpItem.Add(new ReportReturnItem
                         {
-                            Label = $"{product.Object.DisplayName}{I18n.Tasks_At()}{product.Location?.DisplayName ?? "???"} ({product.Position.X},{product.Position.Y})",
+                            Label = $"{product.Object.DisplayName}{I18n.Tasks_At()}{FormatLocation(productLocation?.Name ?? "???", productBuilding?.Name, product.Position)}",
                             WarpTo = product.Location == null ? null : Tuple.Create(product.Location.NameOrUniqueName, (int)product.Position.X, (int)product.Position.Y)
                         });
                     }
@@ -378,7 +384,7 @@ namespace DailyTasksReport.TaskEngines
 
                         rpItem.Add(new ReportReturnItem
                         {
-                            Label = $"{tuple.Item2}{s}{tuple.Item1.indoors.Value.Name} ({tuple.Item1.GetParentLocation().DisplayName}-{tuple.Item1.tileX},{tuple.Item1.tileY})",
+                            Label = $"{tuple.Item2}{s}{FormatLocation(tuple.Item1.GetParentLocation().Name, tuple.Item1.indoors.Value.Name, tuple.Item1.tileX.Value, tuple.Item1.tileY.Value)}",
                             WarpTo = Tuple.Create(
                               tuple.Item1.indoors.Value.NameOrUniqueName,
                                tuple.Item1.tileX.Value,
@@ -394,7 +400,21 @@ namespace DailyTasksReport.TaskEngines
 
             return rpItem;
         }
-
+        private Tuple<GameLocation?, GameLocation?> GetLocationAndBuilding(GameLocation? gamelocation)
+        {
+            if( gamelocation == null )
+            {
+                return new Tuple<GameLocation?, GameLocation?>(null, null);
+            }
+            if (gamelocation?.GetParentLocation() != null)
+            {
+                return new Tuple<GameLocation?, GameLocation?>(gamelocation.GetParentLocation(), gamelocation);
+            }
+            else
+            {
+                return new Tuple<GameLocation?, GameLocation?>(gamelocation, null);
+            }
+        }
         public override List<ReportReturnItem> GeneralInfo()
         {
             List<ReportReturnItem> prItem = new List<ReportReturnItem> { };
