@@ -1,0 +1,75 @@
+﻿{
+  //
+  //  daily tasks
+  //
+  "tasks.complete": "全都做完了！",
+  "tasks.nothingtodo": "今日无事可做。",
+  //
+  //  animal tasks
+  //
+  "tasks.animal.notpettedanimals": "未抚摸动物",
+  "tasks.animal.uncollectedanimalproduct": "未收集动物产品",
+  "tasks.animal.emptyhay": "饲料槽未被填满",
+  "tasks.animal.at": " 在 ",
+  "tasks.animal.has": " 带有 ",
+  "tasks.animal.missinghay": "缺少干草在",
+  "tasks.animal.missinghays": " 缺少干草在 ",
+  "tasks.animal.ponds.attention": "鱼塘需要注意",
+  "tasks.animal.ponds.collect": "鱼塘需要收集产物",
+  //
+  //  crop tasks
+  //
+  "tasks.crop.notwatered": "作物未浇水",
+  "tasks.crop.readytoharvest": "作物准备收获",
+  "tasks.crop.dead": "枯萎作物在 ",
+  "tasks.crop.fruits": "结果果树在 ",
+  "tasks.crop.label.unwatered": "未浇水作物",
+  "tasks.crop.label.harvest": "准备收获作物",
+  "tasks.crop.label.crops": "枯萎作物",
+  "tasks.crop.label.fruits": "已结果果树",
+  "tasks.crop.treeat": " 树在 ",
+  "tasks.crop.with": " 带有 ",
+  "tasks.crop.withfruit": " 水果 ",
+  "tasks.crop.withfruits": " 水果 ",
+  "tasks.crop.at": " 在 ",
+  //
+  //  cave tasks
+  //
+  "tasks.cave.incave": " 在农场洞穴中",
+  "tasks.cave.itemname.fruits": "水果",
+  "tasks.cave.itemname.mushrooms": "蘑菇",
+  //
+  // misc tasks
+  //
+  "tasks.misc.queen": "酱料女皇今天将播出一个新食谱。",
+  "tasks.misc.merchant": "旅行货车今天在镇上。",
+  "tasks.misc.birthday": "今天是 {{NPCName}} 的生日!",
+  "tasks.misc.nohay": "农场的干草已经用完了",
+  "tasks.misc.hay": "农场只剩下了 {{count}} 个干草.",
+  "tasks.misc.lastday": "今天是当季的最后一天，记得收获所有剩余的农作物。",
+  //
+  //  object tasks
+  //
+  "tasks.object.crab": "蟹笼准备被收集",
+  "tasks.object.crabpot": "蟹笼缺少鱼饵",
+  "tasks.object.machine": "机器未收集产出",
+  "tasks.object.silver": "银星 ",
+  "tasks.object.gold": "金星 ",
+  "tasks.object.iridium": "铱星 ",
+  "tasks.object.with": " 带有 ",
+  //
+  //  pet tasks
+  //
+  "tasks.pet.pet": "宠物未被抚摸。",
+  "tasks.pet.bowl": "宠物碗未被充满。",
+  "tasks.at": " 在 ",
+  //
+  //  terrain tasks
+  //
+  "tasks.terrain.fence": "围栏损坏在 ",
+  "tasks.terrain.damaged": " 损坏围栏: ",
+  //
+  //  location display
+  //
+  "tasks.location.in": " 在 "
+}
